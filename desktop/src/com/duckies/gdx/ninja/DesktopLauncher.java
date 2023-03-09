@@ -8,8 +8,10 @@ import com.duckies.gdx.ninja.NinjaGame;
 public class DesktopLauncher {
 	public static void main (String[] arg) {
 		Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
+		config.setTitle("Drop");
+		config.setWindowedMode(800, 480);
+		config.useVsync(true);
 		config.setForegroundFPS(60);
-		config.setTitle("Ninja");
 		new Lwjgl3Application(new NinjaGame(), config);
 	}
 }

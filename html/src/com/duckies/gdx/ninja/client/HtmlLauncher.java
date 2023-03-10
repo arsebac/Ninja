@@ -3,7 +3,7 @@ package com.duckies.gdx.ninja.client;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.backends.gwt.GwtApplication;
 import com.badlogic.gdx.backends.gwt.GwtApplicationConfiguration;
-import com.duckies.gdx.ninja.NinjaGame;
+import com.duckies.gdx.ninja.Drop;
 
 public class HtmlLauncher extends GwtApplication {
 
@@ -17,6 +17,6 @@ public class HtmlLauncher extends GwtApplication {
 
         @Override
         public ApplicationListener createApplicationListener () {
-                return new NinjaGame();
+                return new Drop();
         }
 }

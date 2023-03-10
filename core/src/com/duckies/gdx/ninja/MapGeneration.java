@@ -1,5 +1,8 @@
 package com.duckies.gdx.ninja;
 
+import java.util.EnumMap;
+import java.util.Map;
+
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -15,6 +18,8 @@ import com.badlogic.gdx.maps.objects.TextureMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
+import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.maps.tiled.tiles.StaticTiledMapTile;
 import com.badlogic.gdx.math.Vector3;
 
 public class MapGeneration extends ApplicationAdapter implements InputProcessor {
@@ -23,12 +28,15 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
     OrthographicCamera camera;
     TiledMapRenderer tiledMapRenderer;
     SpriteBatch sb;
-    Texture texture;
-    Sprite sprite;
     MapLayer objectLayer;
 
     TextureRegion textureRegion;
 
+
+    private EnumMap<DirectionEnum, Texture> textureByDirection = new EnumMap<>(DirectionEnum.class);
+
+    private static final Map<DirectionEnum, String> ASSET_PATH_BY_DIRECTION = Map.of(DirectionEnum.LEFT, "hero_left.png"
+    , DirectionEnum.RIGHT, "hero_right.png", DirectionEnum.UP, "hero_back.png", DirectionEnum.DOWN, "hero2.png");
 
     @Override
     public void create() {
@@ -42,16 +50,23 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
         sb = new SpriteBatch();
         tiledMapRenderer = new OrthogonalTiledMapRendererWithSprites(tiledMap, sb);
         Gdx.input.setInputProcessor(this);
-        texture = new Texture(Gdx.files.internal("bucket.png"));
-        sprite = new Sprite(texture);
+
+        ASSET_PATH_BY_DIRECTION.forEach((direction, path) -> textureByDirection.put(direction, buildTexture(path)));
+
+        Texture texture = textureByDirection.get(DirectionEnum.DOWN);
 
         objectLayer = tiledMap.getLayers().get("objects");
         textureRegion = new TextureRegion(texture, 64, 64);
 
         TextureMapObject tmo = new TextureMapObject(textureRegion);
-        tmo.setX(0);
-        tmo.setY(0);
+        tmo.setX(w/2);
+        tmo.setY(h/2);
+
         objectLayer.getObjects().add(tmo);
+    }
+
+    private static Texture buildTexture(String path) {
+        return new Texture(Gdx.files.internal(path));
     }
 
     @Override
@@ -73,19 +88,27 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
 
     @Override
     public boolean keyDown(int keycode) {
+
         return false;
     }
 
     @Override
     public boolean keyUp(int keycode) {
-        if (keycode == Input.Keys.LEFT)
-            camera.translate(-32, 0);
-        if (keycode == Input.Keys.RIGHT)
-            camera.translate(32, 0);
-        if (keycode == Input.Keys.UP)
-            camera.translate(0, -32);
-        if (keycode == Input.Keys.DOWN)
-            camera.translate(0, 32);
+        for (Map.Entry<DirectionEnum, Texture> textureDirectionEntry : textureByDirection.entrySet()) {
+            DirectionEnum direction = textureDirectionEntry.getKey();
+            if (keycode != direction.getKey()) {
+                continue;
+            }
+
+            camera.translate(direction.getX(), direction.getY());
+            TextureMapObject character = (TextureMapObject) tiledMap.getLayers().get("objects").getObjects().get(2);
+            character.setX(character.getX() + direction.getX());
+            character.setY(character.getY() + direction.getY());
+
+
+            character.getTextureRegion().setTexture(textureDirectionEntry.getValue());
+
+        }
         if (keycode == Input.Keys.NUM_1)
             tiledMap.getLayers().get(0).setVisible(!tiledMap.getLayers().get(0).isVisible());
         if (keycode == Input.Keys.NUM_2)
@@ -101,11 +124,6 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        Vector3 clickCoordinates = new Vector3(screenX, screenY, 0);
-        Vector3 position = camera.unproject(clickCoordinates);
-        TextureMapObject character = (TextureMapObject) tiledMap.getLayers().get("objects").getObjects().get(2);
-        character.setX((float) position.x);
-        character.setY((float) position.y);
         return true;
     }
 

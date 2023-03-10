@@ -11,16 +11,13 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapLayer;
+import com.badlogic.gdx.maps.objects.TextureMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
-import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
-import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
-import com.badlogic.gdx.maps.tiled.tiles.StaticTiledMapTile;
 import com.badlogic.gdx.math.Vector3;
 
 public class MapGeneration extends ApplicationAdapter implements InputProcessor {
-
     Texture img;
     TiledMap tiledMap;
     OrthographicCamera camera;
@@ -28,6 +25,10 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
     SpriteBatch sb;
     Texture texture;
     Sprite sprite;
+    MapLayer objectLayer;
+
+    TextureRegion textureRegion;
+
 
     @Override
     public void create() {
@@ -38,58 +39,35 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
         camera.setToOrtho(false, w, h);
         camera.update();
         tiledMap = new TmxMapLoader().load("map/map.tmx");
-        tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
-        Gdx.input.setInputProcessor(this);
-
         sb = new SpriteBatch();
+        tiledMapRenderer = new OrthogonalTiledMapRendererWithSprites(tiledMap, sb);
+        Gdx.input.setInputProcessor(this);
         texture = new Texture(Gdx.files.internal("bucket.png"));
         sprite = new Sprite(texture);
 
+        objectLayer = tiledMap.getLayers().get("objects");
+        textureRegion = new TextureRegion(texture, 64, 64);
 
-        // Get the width and height of our maps
-        // Then halve it, as our sprites are 64x64 not 32x32 that our map is made of
-        int mapWidth = tiledMap.getProperties().get("width", Integer.class) / 2;
-        int mapHeight = tiledMap.getProperties().get("height", Integer.class) / 2;
-
-        // Create a new map layer
-        TiledMapTileLayer tileLayer = new TiledMapTileLayer(mapWidth, mapHeight, 64, 64);
-
-        // Create a cell(tile) to add to the layer
-        TiledMapTileLayer.Cell cell = new TiledMapTileLayer.Cell();
-
-        // The sprite/tilesheet behind our new layer is a single image (our sprite)
-        // Create a TextureRegion that is the entire size of our texture
-        TextureRegion textureRegion = new TextureRegion(texture, 64, 64);
-
-        // Now set the graphic for our cell to our newly created region
-        cell.setTile(new StaticTiledMapTile(textureRegion));
-
-        // Now set the cell at position 4,10 ( 8,20 in map coordinates ).  This is the position of a tree
-        // Relative to 0,0 in our map which is the bottom left corner
-        tileLayer.setCell(4, 10, cell);
-
-        // Ok, I admit, this part is a gross hack.
-        // Get the current top most layer from the map and store it
-        MapLayer tempLayer = tiledMap.getLayers().get(tiledMap.getLayers().getCount() - 1);
-        // Now remove it
-        tiledMap.getLayers().remove(tiledMap.getLayers().getCount() - 1);
-        // Now add our newly created layer
-        tiledMap.getLayers().add(tileLayer);
-        // Now add it back, now our new layer is not the top most one.
-        tiledMap.getLayers().add(tempLayer);
+        TextureMapObject tmo = new TextureMapObject(textureRegion);
+        tmo.setX(0);
+        tmo.setY(0);
+        objectLayer.getObjects().add(tmo);
     }
 
     @Override
     public void render() {
+
+        sb.setProjectionMatrix(camera.combined);
+
         Gdx.gl.glClearColor(1, 0, 0, 1);
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         camera.update();
         tiledMapRenderer.setView(camera);
-        tiledMapRenderer.render();
-        sb.setProjectionMatrix(camera.combined);
+
         sb.begin();
-        sprite.draw(sb);
+        tiledMapRenderer.render();
+
         sb.end();
     }
 
@@ -125,7 +103,9 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         Vector3 clickCoordinates = new Vector3(screenX, screenY, 0);
         Vector3 position = camera.unproject(clickCoordinates);
-        sprite.setPosition(position.x, position.y);
+        TextureMapObject character = (TextureMapObject) tiledMap.getLayers().get("objects").getObjects().get(2);
+        character.setX((float) position.x);
+        character.setY((float) position.y);
         return true;
     }
 

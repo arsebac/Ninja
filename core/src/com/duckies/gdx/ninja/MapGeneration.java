@@ -1,21 +1,25 @@
 package com.duckies.gdx.ninja;
 
-import java.util.EnumMap;
-import java.util.Map;
-
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.objects.TextureMapObject;
-import com.badlogic.gdx.maps.tiled.*;
+import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
+import com.badlogic.gdx.maps.tiled.TmxMapLoader;
+import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.utils.TimeUtils;
+
+import java.util.Map;
 
 public class MapGeneration extends ApplicationAdapter implements InputProcessor {
 
@@ -39,7 +43,7 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
 
     private DebugTile debugTile;
     private Player player;
-
+    private ProgressBar progressBar;
 
     @Override
     public void create() {
@@ -65,7 +69,21 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
 
         objectLayer = tiledMap.getLayers().get(5);
 
+        addProgressBarToLayer();
+
         objectLayer.getObjects().add(tmo);
+    }
+
+    private void addProgressBarToLayer() {
+
+        Skin skin = new Skin(Gdx.files.classpath("data/uiskin.json"));
+        Pixmap pixmap = new Pixmap(10, 10, Pixmap.Format.RGBA8888);
+        pixmap.setColor(Color.WHITE);
+        pixmap.fill();
+        skin.add("green", new Texture(pixmap));
+
+        progressBar = new ProgressBar(0.0f, 100f, 2, false, skin);
+
     }
 
     private static Texture buildTexture(String path) {
@@ -89,17 +107,19 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
         sb.begin();
         tiledMapRenderer.render();
 
-      //  Vector3 projected = camera.project(new Vector3(textX, textY, 0));
+        progressBar.draw(sb, 1);
+
+        //  Vector3 projected = camera.project(new Vector3(textX, textY, 0));
         debugTile.draw(sb);
         sb.end();
+
     }
 
     private void updateCharacterPositionAndTexture() {
         boolean isIdle = true;
         TextureMapObject character = getCharacter();
 
-        for (Map.Entry<DirectionEnum, Animation<TextureRegion>> textureDirectionEntry :
-                player.getAnimationByDirection().entrySet()) {
+        for (Map.Entry<DirectionEnum, Animation<TextureRegion>> textureDirectionEntry : player.getAnimationByDirection().entrySet()) {
             DirectionEnum direction = textureDirectionEntry.getKey();
 
             if (!Gdx.input.isKeyPressed(direction.getKey())) {
@@ -114,6 +134,10 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
             float newPositionY = character.getY() + speedY;
 
             //if (detectCollision(newPositionX, new))
+
+            progressBar.setValue(character.getX() / 25);
+            progressBar.setX(character.getX());
+            progressBar.setY(character.getY() / 200);
 
             TiledMapTileLayer layer = (TiledMapTileLayer) tiledMap.getLayers().get("Front");
 
@@ -134,6 +158,9 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
             character.setX(newPositionX);
             character.setY(newPositionY);
             debugTile.translate(speedX, speedY);
+
+//            progressBarObject.setX(newPositionX);
+//            progressBarObject.setY(newPositionY - Gdx.graphics.getHeight() / 2);
 
             if (currentDirection != direction) {
                 // We need to update direction

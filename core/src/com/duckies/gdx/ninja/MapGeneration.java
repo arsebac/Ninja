@@ -10,7 +10,7 @@ import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapLayer;
@@ -18,11 +18,11 @@ import com.badlogic.gdx.maps.objects.TextureMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
-import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
-import com.badlogic.gdx.maps.tiled.tiles.StaticTiledMapTile;
-import com.badlogic.gdx.math.Vector3;
 
 public class MapGeneration extends ApplicationAdapter implements InputProcessor {
+
+    private static final int FRAME_COLS = 4, FRAME_ROWS = 4;
+
     Texture img;
     TiledMap tiledMap;
     OrthographicCamera camera;
@@ -32,8 +32,15 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
 
     TextureRegion textureRegion;
 
+    private static final float SPEED = 15;
+
+    private DirectionEnum currentDirection;
+    private Long startOfCurrentDirection;
 
     private EnumMap<DirectionEnum, Texture> textureByDirection = new EnumMap<>(DirectionEnum.class);
+    private EnumMap<DirectionEnum, Animation<TextureRegion>> animationByDirection = new EnumMap<>(DirectionEnum.class);
+
+    Animation<TextureRegion> idleAnimation;
 
     private static final Map<DirectionEnum, String> ASSET_PATH_BY_DIRECTION = Map.of(DirectionEnum.LEFT, "hero_left.png"
     , DirectionEnum.RIGHT, "hero_right.png", DirectionEnum.UP, "hero_back.png", DirectionEnum.DOWN, "hero2.png");
@@ -51,12 +58,50 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
         tiledMapRenderer = new OrthogonalTiledMapRendererWithSprites(tiledMap, sb);
         Gdx.input.setInputProcessor(this);
 
+        // V 0.1 : Use 1 frame by direction
         ASSET_PATH_BY_DIRECTION.forEach((direction, path) -> textureByDirection.put(direction, buildTexture(path)));
+
+        // V 0.2 : Use Animation
+        // Load the sprite sheet as a Texture
+        Texture walkSheet = new Texture(Gdx.files.internal("hero.png"));
+
+        // Use the split utility method to create a 2D array of TextureRegions. This is
+        // possible because this sprite sheet contains frames of equal size and they are
+        // all aligned.
+        TextureRegion[][] tmp = TextureRegion.split(walkSheet,
+                walkSheet.getWidth() / FRAME_COLS,
+                walkSheet.getHeight() / FRAME_ROWS);
+
+        // Place the regions into a 1D array in the correct order, starting from the top
+        // left, going across first. The Animation constructor requires a 1D array.
+
+        TextureRegion[] idleTextures = new TextureRegion[1];
+        idleTextures[0] = tmp[0][0];
+
+        idleAnimation = new Animation<>(0.066f, idleTextures);
+        idleAnimation.setPlayMode(Animation.PlayMode.LOOP);
+
+
+        for (int i = 0; i < FRAME_ROWS; i++) {
+            int index = 0;
+            TextureRegion[] walkDirectionFrame = new TextureRegion[FRAME_ROWS];
+            for (int j = 0; j < FRAME_COLS; j++) {
+                walkDirectionFrame[index++] = tmp[i][j];
+            }
+            DirectionEnum direction = DirectionEnum.getFromSprintId(i);
+            Animation<TextureRegion> animation = new Animation<>(0.15f, walkDirectionFrame);
+            animation.setPlayMode(Animation.PlayMode.LOOP);
+            animationByDirection.put(direction, animation);
+
+
+        }
+
+        startOfCurrentDirection = System.currentTimeMillis();
 
         Texture texture = textureByDirection.get(DirectionEnum.DOWN);
 
         objectLayer = tiledMap.getLayers().get("objects");
-        textureRegion = new TextureRegion(texture, 64, 64);
+        textureRegion = new TextureRegion(texture, 45, 64);
 
         TextureMapObject tmo = new TextureMapObject(textureRegion);
         tmo.setX(w/2);
@@ -77,6 +122,9 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
         Gdx.gl.glClearColor(1, 0, 0, 1);
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        updateCharacterPositionAndTexture();
+
         camera.update();
         tiledMapRenderer.setView(camera);
 
@@ -84,6 +132,50 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
         tiledMapRenderer.render();
 
         sb.end();
+    }
+
+    private void updateCharacterPositionAndTexture() {
+        boolean isIdle = true;
+        TextureMapObject character = getCharacter();
+
+        for (Map.Entry<DirectionEnum, Animation<TextureRegion>> textureDirectionEntry : animationByDirection.entrySet()) {
+            DirectionEnum direction = textureDirectionEntry.getKey();
+
+            if (!Gdx.input.isKeyPressed(direction.getKey())) {
+                continue;
+            }
+
+            float speedX = direction.getX() * Gdx.graphics.getDeltaTime() * SPEED;
+            float speedY = direction.getY() * Gdx.graphics.getDeltaTime() * SPEED;
+
+            camera.translate(speedX, speedY);
+
+            character.setX(character.getX() + speedX);
+            character.setY(character.getY() + speedY);
+
+            System.out.println("character pos : (" + character.getX() + "," + character.getY() + ")");
+
+            if (currentDirection != direction) {
+                // We need to update direction
+                System.out.println("Direction have been updated here");
+                currentDirection = direction;
+                startOfCurrentDirection = System.currentTimeMillis();
+            }
+            updateCharacterTexture(character, textureDirectionEntry.getValue());
+
+
+            isIdle = false;
+
+
+        }
+
+        if (isIdle) {
+            if (currentDirection != null) {
+                currentDirection = null;
+                startOfCurrentDirection = System.currentTimeMillis();
+            }
+            updateCharacterTexture(character, idleAnimation);
+        }
     }
 
     @Override
@@ -94,26 +186,19 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
 
     @Override
     public boolean keyUp(int keycode) {
-        for (Map.Entry<DirectionEnum, Texture> textureDirectionEntry : textureByDirection.entrySet()) {
-            DirectionEnum direction = textureDirectionEntry.getKey();
-            if (keycode != direction.getKey()) {
-                continue;
-            }
-
-            camera.translate(direction.getX(), direction.getY());
-            TextureMapObject character = (TextureMapObject) tiledMap.getLayers().get("objects").getObjects().get(2);
-            character.setX(character.getX() + direction.getX());
-            character.setY(character.getY() + direction.getY());
-
-
-            character.getTextureRegion().setTexture(textureDirectionEntry.getValue());
-
-        }
         if (keycode == Input.Keys.NUM_1)
             tiledMap.getLayers().get(0).setVisible(!tiledMap.getLayers().get(0).isVisible());
         if (keycode == Input.Keys.NUM_2)
             tiledMap.getLayers().get(1).setVisible(!tiledMap.getLayers().get(1).isVisible());
         return false;
+    }
+
+    private void updateCharacterTexture(TextureMapObject character, Animation<TextureRegion> texture) {
+        character.setTextureRegion(texture.getKeyFrame((System.currentTimeMillis() - startOfCurrentDirection) / 1000f));
+    }
+
+    private TextureMapObject getCharacter() {
+        return (TextureMapObject) tiledMap.getLayers().get("objects").getObjects().get(2);
     }
 
     @Override

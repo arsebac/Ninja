@@ -11,7 +11,6 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapLayer;
@@ -20,9 +19,9 @@ import com.badlogic.gdx.maps.tiled.*;
 
 public class MapGeneration extends ApplicationAdapter implements InputProcessor {
 
-    private static final int FRAME_COLS = 4, FRAME_ROWS = 4;
-    private static final int PLAYER_WIDTH = 45;
-    private static final int PLAYER_HEIGHT = 64;
+    private static final int FRAME_COLS = 4, FRAME_ROWS = 14;
+    private static final int PLAYER_WIDTH = 16;
+    private static final int PLAYER_HEIGHT = 16;
 
     Texture img;
     TiledMap tiledMap;
@@ -38,13 +37,9 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
     private DirectionEnum currentDirection;
     private Long startOfCurrentDirection;
 
-    private EnumMap<DirectionEnum, Texture> textureByDirection = new EnumMap<>(DirectionEnum.class);
-    private EnumMap<DirectionEnum, Animation<TextureRegion>> animationByDirection = new EnumMap<>(DirectionEnum.class);
+    private DebugTile debugTile;
+    private Player player;
 
-    Animation<TextureRegion> idleAnimation;
-
-    private static final Map<DirectionEnum, String> ASSET_PATH_BY_DIRECTION = Map.of(DirectionEnum.LEFT, "hero_left.png", DirectionEnum.RIGHT,
-            "hero_right.png", DirectionEnum.UP, "hero_back.png", DirectionEnum.DOWN, "hero2.png");
 
     @Override
     public void create() {
@@ -56,56 +51,19 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
         camera.update();
         tiledMap = new TmxMapLoader().load("farm/Farm.tmx");
         sb = new SpriteBatch();
-        tiledMapRenderer = new OrthogonalTiledMapRendererWithSprites(tiledMap, sb);
+        tiledMapRenderer = new OrthogonalTiledMapRendererWithSprites(tiledMap);
         Gdx.input.setInputProcessor(this);
 
-        // V 0.1 : Use 1 frame by direction
-        ASSET_PATH_BY_DIRECTION.forEach((direction, path) -> textureByDirection.put(direction, buildTexture(path)));
+        player = new Player("Sam.png");
 
-        // V 0.2 : Use Animation
-        // Load the sprite sheet as a Texture
-        Texture walkSheet = new Texture(Gdx.files.internal("hero.png"));
-
-        // Use the split utility method to create a 2D array of TextureRegions. This is
-        // possible because this sprite sheet contains frames of equal size and they are
-        // all aligned.
-        TextureRegion[][] tmp = TextureRegion.split(walkSheet, walkSheet.getWidth() / FRAME_COLS, walkSheet.getHeight() / FRAME_ROWS);
-
-        // Place the regions into a 1D array in the correct order, starting from the top
-        // left, going across first. The Animation constructor requires a 1D array.
-
-        TextureRegion[] idleTextures = new TextureRegion[1];
-        idleTextures[0] = tmp[0][0];
-
-        idleAnimation = new Animation<>(0.066f, idleTextures);
-        idleAnimation.setPlayMode(Animation.PlayMode.LOOP);
-
-
-        for (int i = 0; i < FRAME_ROWS; i++) {
-            int index = 0;
-            TextureRegion[] walkDirectionFrame = new TextureRegion[FRAME_ROWS];
-            for (int j = 0; j < FRAME_COLS; j++) {
-                walkDirectionFrame[index++] = tmp[i][j];
-            }
-            DirectionEnum direction = DirectionEnum.getFromSprintId(i);
-            Animation<TextureRegion> animation = new Animation<>(0.15f, walkDirectionFrame);
-            animation.setPlayMode(Animation.PlayMode.LOOP);
-            animationByDirection.put(direction, animation);
-
-
-        }
 
         startOfCurrentDirection = System.currentTimeMillis();
 
-        Texture texture = textureByDirection.get(DirectionEnum.DOWN);
+        debugTile = new DebugTile(tiledMap);
 
-        objectLayer = tiledMap.getLayers().get("Back");
+        TextureMapObject tmo = player.createTextureMapObject(w / 2, h / 2);
 
-        textureRegion = new TextureRegion(texture, PLAYER_WIDTH, PLAYER_HEIGHT);
-
-        TextureMapObject tmo = new TextureMapObject(textureRegion);
-        tmo.setX(w / 2);
-        tmo.setY(h / 2);
+        objectLayer = tiledMap.getLayers().get(5);
 
         objectLayer.getObjects().add(tmo);
     }
@@ -131,6 +89,8 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
         sb.begin();
         tiledMapRenderer.render();
 
+      //  Vector3 projected = camera.project(new Vector3(textX, textY, 0));
+        debugTile.draw(sb);
         sb.end();
     }
 
@@ -138,7 +98,8 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
         boolean isIdle = true;
         TextureMapObject character = getCharacter();
 
-        for (Map.Entry<DirectionEnum, Animation<TextureRegion>> textureDirectionEntry : animationByDirection.entrySet()) {
+        for (Map.Entry<DirectionEnum, Animation<TextureRegion>> textureDirectionEntry :
+                player.getAnimationByDirection().entrySet()) {
             DirectionEnum direction = textureDirectionEntry.getKey();
 
             if (!Gdx.input.isKeyPressed(direction.getKey())) {
@@ -158,17 +119,10 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
 
             int x = (int) ((character.getX() / layer.getTileHeight()));
             int y = (int) ((character.getY() / layer.getTileWidth()));
-            System.out.println(x + " " + character.getX());
-            System.out.println(y + " " + character.getY());
             TiledMapTileLayer.Cell cell = layer.getCell(x, y);
             if (cell != null) {
-                TiledMapTile tile = cell.getTile();
-                System.out.println(tile.getId());
-                System.out.println(tile.getProperties().get("walkable"));
-                System.out.println(tile.getProperties());
-                System.out.println(tile.getObjects().getCount());
-                if (tile.getProperties().get("walkable") != null) {
-                    boolean walkable = Boolean.parseBoolean(tile.getProperties().get("walkable").toString());
+                if (cell.getTile().getProperties().get("walkable") != null) {
+                    boolean walkable = Boolean.parseBoolean(cell.getTile().getProperties().get("walkable").toString());
                     if (!walkable) {
                         isIdle = true;
                         break;
@@ -179,10 +133,10 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
             camera.translate(speedX, speedY);
             character.setX(newPositionX);
             character.setY(newPositionY);
+            debugTile.translate(speedX, speedY);
 
             if (currentDirection != direction) {
                 // We need to update direction
-                System.out.println("Direction have been updated here");
                 currentDirection = direction;
                 startOfCurrentDirection = System.currentTimeMillis();
             }
@@ -199,7 +153,7 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
                 currentDirection = null;
                 startOfCurrentDirection = System.currentTimeMillis();
             }
-            updateCharacterTexture(character, idleAnimation);
+            updateCharacterTexture(character, player.getIdleTexture());
         }
     }
 
@@ -213,6 +167,7 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
     public boolean keyUp(int keycode) {
         if (keycode == Input.Keys.NUM_1) tiledMap.getLayers().get(0).setVisible(!tiledMap.getLayers().get(0).isVisible());
         if (keycode == Input.Keys.NUM_2) tiledMap.getLayers().get(1).setVisible(!tiledMap.getLayers().get(1).isVisible());
+        if (keycode == Input.Keys.NUM_3) debugTile.switchVisibility();
         return false;
     }
 
@@ -221,7 +176,7 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
     }
 
     private TextureMapObject getCharacter() {
-        return (TextureMapObject) tiledMap.getLayers().get("Back").getObjects().get(0);
+        return (TextureMapObject) tiledMap.getLayers().get(5).getObjects().get(tiledMap.getLayers().get(5).getObjects().getCount() - 1);
     }
 
     @Override

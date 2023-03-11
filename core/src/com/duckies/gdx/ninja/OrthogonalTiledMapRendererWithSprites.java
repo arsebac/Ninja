@@ -9,7 +9,7 @@ import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 public class OrthogonalTiledMapRendererWithSprites extends OrthogonalTiledMapRenderer {
 
 
-    public OrthogonalTiledMapRendererWithSprites(TiledMap map, SpriteBatch spriteBatch) {
+    public OrthogonalTiledMapRendererWithSprites(TiledMap map) {
         super(map);
     }
 

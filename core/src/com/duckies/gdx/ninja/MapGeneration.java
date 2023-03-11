@@ -11,6 +11,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapLayer;
@@ -157,8 +158,8 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
             //if (detectCollision(newPositionX, new))
 
             TiledMapTileLayer layer = (TiledMapTileLayer) tiledMap.getLayers().get("foreground");
-            int x = (int) ((character.getX() / layer.getHeight()));
-            int y = (int) ((character.getY() / layer.getWidth()));
+            int x = (int) ((character.getX() / layer.getTileHeight()));
+            int y = (int) ((character.getY() / layer.getTileWidth()));
             System.out.println(x + " " + character.getX());
             System.out.println(y + " " + character.getY());
             TiledMapTileLayer.Cell cell = layer.getCell(x, y);
@@ -178,7 +179,6 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
             camera.translate(speedX, speedY);
             character.setX(newPositionX);
             character.setY(newPositionY);
-
 
             if (currentDirection != direction) {
                 // We need to update direction

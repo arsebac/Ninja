@@ -1,0 +1,21 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "",
+    "expandedProjectPaths": [
+    ],
+    "fileStates": {
+    },
+    "last.imagePath": "C:/Users/Nicolas/IdeaProjects/Ninja/assets/map/kenneyrpgpack/Spritesheet",
+    "map.height": 40,
+    "map.lastUsedFormat": "tmx",
+    "map.width": 60,
+    "openFiles": [
+    ],
+    "project": "newmap.tiled-project",
+    "recentFiles": [
+    ],
+    "tileset.embedInMap": true
+}

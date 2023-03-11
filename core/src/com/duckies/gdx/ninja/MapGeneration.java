@@ -45,8 +45,8 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
 
     Animation<TextureRegion> idleAnimation;
 
-    private static final Map<DirectionEnum, String> ASSET_PATH_BY_DIRECTION = Map.of(DirectionEnum.LEFT, "hero_left.png"
-    , DirectionEnum.RIGHT, "hero_right.png", DirectionEnum.UP, "hero_back.png", DirectionEnum.DOWN, "hero2.png");
+    private static final Map<DirectionEnum, String> ASSET_PATH_BY_DIRECTION = Map.of(DirectionEnum.LEFT, "hero_left.png", DirectionEnum.RIGHT,
+            "hero_right.png", DirectionEnum.UP, "hero_back.png", DirectionEnum.DOWN, "hero2.png");
 
     @Override
     public void create() {
@@ -56,7 +56,7 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
         camera = new OrthographicCamera();
         camera.setToOrtho(false, w, h);
         camera.update();
-        tiledMap = new TmxMapLoader().load("map/map.tmx");
+        tiledMap = new TmxMapLoader().load("project_tiled/newmap.tmx");
         sb = new SpriteBatch();
         tiledMapRenderer = new OrthogonalTiledMapRendererWithSprites(tiledMap, sb);
         Gdx.input.setInputProcessor(this);
@@ -71,9 +71,7 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
         // Use the split utility method to create a 2D array of TextureRegions. This is
         // possible because this sprite sheet contains frames of equal size and they are
         // all aligned.
-        TextureRegion[][] tmp = TextureRegion.split(walkSheet,
-                walkSheet.getWidth() / FRAME_COLS,
-                walkSheet.getHeight() / FRAME_ROWS);
+        TextureRegion[][] tmp = TextureRegion.split(walkSheet, walkSheet.getWidth() / FRAME_COLS, walkSheet.getHeight() / FRAME_ROWS);
 
         // Place the regions into a 1D array in the correct order, starting from the top
         // left, going across first. The Animation constructor requires a 1D array.
@@ -108,8 +106,8 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
         textureRegion = new TextureRegion(texture, PLAYER_WIDTH, PLAYER_HEIGHT);
 
         TextureMapObject tmo = new TextureMapObject(textureRegion);
-        tmo.setX(w/2);
-        tmo.setY(h/2);
+        tmo.setX(w / 2);
+        tmo.setY(h / 2);
 
         objectLayer.getObjects().add(tmo);
     }
@@ -153,17 +151,17 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
             float speedY = direction.getY() * Gdx.graphics.getDeltaTime() * SPEED;
 
 
-
-
-            float newPositionX = character.getX() + speedX ;
+            float newPositionX = character.getX() + speedX;
             float newPositionY = character.getY() + speedY;
 
             //if (detectCollision(newPositionX, new))
 
-
             TiledMapTileLayer layer = (TiledMapTileLayer) tiledMap.getLayers().get("foreground");
-            TiledMapTileLayer.Cell cell = layer.getCell((int) ((newPositionX + PLAYER_HEIGHT / 2f) / layer.getHeight()),
-                    (int) ((newPositionY + PLAYER_WIDTH / 2f) / layer.getWidth()));
+            int x = (int) ((character.getX() / layer.getHeight()));
+            int y = (int) ((character.getY() / layer.getWidth()));
+            System.out.println(x + " " + character.getX());
+            System.out.println(y + " " + character.getY());
+            TiledMapTileLayer.Cell cell = layer.getCell(x, y);
             if (cell != null) {
                 System.out.println(cell.getTile().getId());
                 System.out.println(cell.getTile().getProperties().get("walkable"));
@@ -213,10 +211,8 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
 
     @Override
     public boolean keyUp(int keycode) {
-        if (keycode == Input.Keys.NUM_1)
-            tiledMap.getLayers().get(0).setVisible(!tiledMap.getLayers().get(0).isVisible());
-        if (keycode == Input.Keys.NUM_2)
-            tiledMap.getLayers().get(1).setVisible(!tiledMap.getLayers().get(1).isVisible());
+        if (keycode == Input.Keys.NUM_1) tiledMap.getLayers().get(0).setVisible(!tiledMap.getLayers().get(0).isVisible());
+        if (keycode == Input.Keys.NUM_2) tiledMap.getLayers().get(1).setVisible(!tiledMap.getLayers().get(1).isVisible());
         return false;
     }
 

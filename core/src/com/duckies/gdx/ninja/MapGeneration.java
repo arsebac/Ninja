@@ -16,10 +16,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.objects.TextureMapObject;
-import com.badlogic.gdx.maps.tiled.TiledMap;
-import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
-import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
-import com.badlogic.gdx.maps.tiled.TmxMapLoader;
+import com.badlogic.gdx.maps.tiled.*;
 
 public class MapGeneration extends ApplicationAdapter implements InputProcessor {
 
@@ -57,7 +54,7 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
         camera = new OrthographicCamera();
         camera.setToOrtho(false, w, h);
         camera.update();
-        tiledMap = new TmxMapLoader().load("project_tiled/newmap.tmx");
+        tiledMap = new TmxMapLoader().load("farm/Farm.tmx");
         sb = new SpriteBatch();
         tiledMapRenderer = new OrthogonalTiledMapRendererWithSprites(tiledMap, sb);
         Gdx.input.setInputProcessor(this);
@@ -102,7 +99,7 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
 
         Texture texture = textureByDirection.get(DirectionEnum.DOWN);
 
-        objectLayer = tiledMap.getLayers().get("players");
+        objectLayer = tiledMap.getLayers().get("Back");
 
         textureRegion = new TextureRegion(texture, PLAYER_WIDTH, PLAYER_HEIGHT);
 
@@ -157,18 +154,21 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
 
             //if (detectCollision(newPositionX, new))
 
-            TiledMapTileLayer layer = (TiledMapTileLayer) tiledMap.getLayers().get("foreground");
+            TiledMapTileLayer layer = (TiledMapTileLayer) tiledMap.getLayers().get("Front");
+
             int x = (int) ((character.getX() / layer.getTileHeight()));
             int y = (int) ((character.getY() / layer.getTileWidth()));
             System.out.println(x + " " + character.getX());
             System.out.println(y + " " + character.getY());
             TiledMapTileLayer.Cell cell = layer.getCell(x, y);
             if (cell != null) {
-                System.out.println(cell.getTile().getId());
-                System.out.println(cell.getTile().getProperties().get("walkable"));
-                System.out.println(cell.getTile().getProperties());
-                if (cell.getTile().getProperties().get("walkable") != null) {
-                    boolean walkable = Boolean.parseBoolean(cell.getTile().getProperties().get("walkable").toString());
+                TiledMapTile tile = cell.getTile();
+                System.out.println(tile.getId());
+                System.out.println(tile.getProperties().get("walkable"));
+                System.out.println(tile.getProperties());
+                System.out.println(tile.getObjects().getCount());
+                if (tile.getProperties().get("walkable") != null) {
+                    boolean walkable = Boolean.parseBoolean(tile.getProperties().get("walkable").toString());
                     if (!walkable) {
                         isIdle = true;
                         break;
@@ -221,7 +221,7 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
     }
 
     private TextureMapObject getCharacter() {
-        return (TextureMapObject) tiledMap.getLayers().get("players").getObjects().get(0);
+        return (TextureMapObject) tiledMap.getLayers().get("Back").getObjects().get(0);
     }
 
     @Override

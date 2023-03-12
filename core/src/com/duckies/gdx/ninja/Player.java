@@ -23,6 +23,8 @@ public class Player {
 	private static final float SPEED = 5;
 
 	private final TextureRegion textureRegion;
+	private final TiledMapTileLayer pathsLayer;
+	private final TiledMapTileLayer backLayer;
 
 	private DirectionEnum currentDirection;
 	private Long startOfCurrentDirection;
@@ -33,54 +35,34 @@ public class Player {
 	private float playerY;
 	private float playerX;
 
-	public Player(String spritePath) {
+	private TextureMapObject textureMapObject;
 
-		Texture walkSheet = new Texture(Gdx.files.internal(spritePath));
+	public Player(SpritesEnum sprite, TiledMapTileLayer pathsLayer, TiledMapTileLayer backLayer) {
+		this.pathsLayer = pathsLayer;
+		this.backLayer = backLayer;
 
-		// Use the split utility method to create a 2D array of TextureRegions.
-		TextureRegion[][] tmp = TextureRegion.split(walkSheet, walkSheet.getWidth() / FRAME_COLS, walkSheet.getHeight() / FRAME_ROWS);
-
-		// Place the regions into a 1D array in the correct order, starting from the top
-		// left, going across first. The Animation constructor requires a 1D array.
-
-		TextureRegion idleTexture =  tmp[0][0];
-
-		idleAnimation = new Animation<>(0.066f, idleTexture);
-		idleAnimation.setPlayMode(Animation.PlayMode.LOOP);
-
-		for (int i = 0; i < 4; i++) {
-			int index = 0;
-			TextureRegion[] walkDirectionFrame = new TextureRegion[FRAME_COLS];
-			for (int j = 0; j < FRAME_COLS; j++) {
-				walkDirectionFrame[index++] = tmp[i][j];
-			}
-			DirectionEnum direction = DirectionEnum.getFromSprintId(i);
-			Animation<TextureRegion> animation = new Animation<>(0.15f, walkDirectionFrame);
-			animation.setPlayMode(Animation.PlayMode.LOOP);
-			animationByDirection.put(direction, animation);
-
-
-		}
+		this.animationByDirection = sprite.buildAnimationByTexture();
 
 		startOfCurrentDirection = System.currentTimeMillis();
 
-		textureRegion = new TextureRegion(idleTexture.getTexture(), PLAYER_WIDTH, PLAYER_HEIGHT);
+		textureRegion = animationByDirection.get(DirectionEnum.DOWN).getKeyFrame(0);
+
+		this.idleAnimation = new Animation<>(1000, textureRegion);
 
 	}
 
 	public TextureMapObject createTextureMapObject(float x, float y) {
 
-		TextureMapObject tmo = new TextureMapObject(textureRegion);
+		textureMapObject = new TextureMapObject(textureRegion);
 		this.playerX = x;
 		this.playerY = y;
-		tmo.setX(x);
-		tmo.setY(y);
+		textureMapObject.setX(x);
+		textureMapObject.setY(y);
 
-		return tmo;
+		return textureMapObject;
 	}
 
-	public Vector2 moveIfPossible(Set<DirectionEnum> directionAsked, TiledMapTileLayer collisionLayer,
-								  TiledMapTileLayer back) {
+	public Vector2 moveIfPossible(Set<DirectionEnum> directionAsked) {
 
 		float speed = Gdx.graphics.getDeltaTime() * SPEED;
 
@@ -100,19 +82,22 @@ public class Player {
 
 		// Player is moving.
 		updateCurrentDirection(directionAsked);
+		textureMapObject.setTextureRegion(getTextureRegion());
 
 		// Check if translation avoid collision
 
+		Set<Vector2> cells = getCellFromPlayerTranslatedCoords(translation, pathsLayer.getTileHeight(),
+				pathsLayer.getTileWidth());
 
-		Set<Vector2> cells = getCellFromPlayerTranslatedCoords(translation, collisionLayer.getTileHeight(),
-				collisionLayer.getTileWidth());
-
-
-		if (anyCollision(cells, collisionLayer, back)) {
+		if (anyCollision(cells)) {
 			return new Vector2();
 		}
+
 		playerX += translation.x;
 		playerY += translation.y;
+
+		textureMapObject.setX(playerX);
+		textureMapObject.setY(playerY);
 
 		return translation;
 
@@ -120,16 +105,16 @@ public class Player {
 
 	private static List<Integer> IGNORED = Arrays.asList(23);
 
-	private boolean anyCollision(Set<Vector2> cells, TiledMapTileLayer collisionLayer, TiledMapTileLayer back) {
+	private boolean anyCollision(Set<Vector2> cells) {
 		for (Vector2 vector : cells) {
-			TiledMapTileLayer.Cell cell = collisionLayer.getCell((int) vector.x, (int) vector.y);
+			TiledMapTileLayer.Cell cell = pathsLayer.getCell((int) vector.x, (int) vector.y);
 			if (cell != null && cell.getTile() != null && ! IGNORED.contains(cell.getTile().getId())) {
-
 				System.out.println("Collition with Cell ( " +  ((int) vector.x) + "," + ((int)vector.y) + ") : " + (cell.getTile().getId()));
 
 				return true;
 			}
-			cell = back.getCell((int) vector.x, (int) vector.y);
+
+			cell = backLayer.getCell((int) vector.x, (int) vector.y);
 			if (cell != null && cell.getTile() != null && "F".equals(cell.getTile().getProperties().get("Passable"))) {
 				System.out.println("Collition with Cell ( " +  ((int) vector.x) + "," + ((int)vector.y) + ") : " + (cell.getTile().getId()) + " : Passable");
 				return true;

@@ -185,8 +185,6 @@ public class GameScreen implements InputProcessor, Screen {
             camera.translate(translation.x, translation.y);
             debugTile.translate(translation.x, translation.y);
 
-            control.translate(translation);
-
         }
     }
 

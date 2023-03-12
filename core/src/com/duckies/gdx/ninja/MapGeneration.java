@@ -10,37 +10,41 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.objects.TextureMapObject;
-import com.badlogic.gdx.maps.tiled.*;
+import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
+import com.badlogic.gdx.maps.tiled.TmxMapLoader;
+import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.utils.TimeUtils;
+
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import com.badlogic.gdx.math.Vector2;
 
 public class MapGeneration extends ApplicationAdapter implements InputProcessor {
-
-    private static final int FRAME_COLS = 4, FRAME_ROWS = 14;
-    private static final int PLAYER_WIDTH = 16;
-    private static final int PLAYER_HEIGHT = 16;
-
-    Texture img;
     TiledMap tiledMap;
+
     OrthographicCamera camera;
+
     TiledMapRenderer tiledMapRenderer;
+
     SpriteBatch sb;
+
     MapLayer objectLayer;
 
-
-    private DirectionEnum currentDirection;
-    private Long startOfCurrentDirection;
-
     private DebugTile debugTile;
+
     private Player player;
 
+    private ProgressBar progressBar;
 
     @Override
     public void create() {
@@ -57,20 +61,27 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
 
         player = new Player("Sam.png");
 
-
-        startOfCurrentDirection = System.currentTimeMillis();
-
         debugTile = new DebugTile(tiledMap);
 
         TextureMapObject tmo = player.createTextureMapObject(w / 2, h / 2);
 
         objectLayer = tiledMap.getLayers().get(5);
 
+        addProgressBarToLayer();
+
         objectLayer.getObjects().add(tmo);
     }
 
-    private static Texture buildTexture(String path) {
-        return new Texture(Gdx.files.internal(path));
+    private void addProgressBarToLayer() {
+
+        Skin skin = new Skin(Gdx.files.classpath("data/uiskin.json"));
+        Pixmap pixmap = new Pixmap(10, 10, Pixmap.Format.RGBA8888);
+        pixmap.setColor(Color.WHITE);
+        pixmap.fill();
+        skin.add("green", new Texture(pixmap));
+
+        progressBar = new ProgressBar(0.0f, 100f, 2, false, skin);
+
     }
 
     @Override
@@ -90,9 +101,12 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
         sb.begin();
         tiledMapRenderer.render();
 
-      //  Vector3 projected = camera.project(new Vector3(textX, textY, 0));
+        progressBar.draw(sb, 1);
+
+        //  Vector3 projected = camera.project(new Vector3(textX, textY, 0));
         debugTile.draw(sb);
         sb.end();
+
     }
 
     private void updateCharacterPositionAndTexture() {
@@ -113,10 +127,11 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
             character.setX(player.getX());
             character.setY(player.getY());
 
+            progressBar.setValue(character.getX() / 25);
+            progressBar.setX(character.getX());
+            progressBar.setY(character.getY() / 200);
+
         }
-
-        character.setTextureRegion(player.getTextureRegion());
-
     }
 
     @Override

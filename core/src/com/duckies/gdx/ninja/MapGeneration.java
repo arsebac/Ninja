@@ -1,43 +1,27 @@
 package com.duckies.gdx.ninja;
 
-import java.util.Arrays;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Animation;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.objects.TextureMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
-import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
-import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.duckies.gdx.ninja.progressbar.HealthBar;
 import com.duckies.gdx.ninja.progressbar.LoadingBarWithBorders;
 
-import java.util.Map;
+import java.util.Arrays;
 import java.util.Set;
-import java.util.stream.Collectors;
-
-import com.badlogic.gdx.math.Vector2;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class MapGeneration extends ApplicationAdapter implements InputProcessor {
     TiledMap tiledMap;
@@ -160,10 +144,6 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
             character.setX(player.getX());
             character.setY(player.getY());
 
-            progressBar.setValue(character.getX() / 25);
-            progressBar.setX(character.getX());
-            progressBar.setY(character.getY() / 200);
-
         }
         character.setTextureRegion(player.getTextureRegion());
     }
@@ -180,6 +160,7 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
         if (keycode == Input.Keys.NUM_3) debugTile.switchVisibility();
         return false;
     }
+
     private TextureMapObject getCharacter() {
         return (TextureMapObject) tiledMap.getLayers().get(5).getObjects().get(tiledMap.getLayers().get(5).getObjects().getCount() - 1);
     }

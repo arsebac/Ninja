@@ -156,6 +156,37 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+
+        // Compute difference between middle of the screen and touch point
+
+        float w = Gdx.graphics.getWidth();
+        float h = Gdx.graphics.getHeight();
+        Vector2 diffWithMiddleOfScreen = new Vector2(screenX - w / 2, (h -screenY) - h / 2);
+
+        double distance = Math.sqrt(diffWithMiddleOfScreen.x * diffWithMiddleOfScreen.x + diffWithMiddleOfScreen.y + diffWithMiddleOfScreen.y);
+        if (distance > 100) {
+            System.out.println("Too far : " + distance);
+            return false;
+        }
+
+        TextureMapObject character = getCharacter();
+        int newX = (int) (character.getX() + diffWithMiddleOfScreen.x) / 16;
+        int newY = (int) (character.getY() + diffWithMiddleOfScreen.y) / 16;
+
+
+
+        // Remove tiles
+        // TODO: check if correct tool is used to remove cell
+        for (MapLayer layer : tiledMap.getLayers()) {
+            if (!(layer instanceof TiledMapTileLayer tiledLayer) || "Back".equals(layer.getName())) {
+                continue;
+            }
+
+            TiledMapTileLayer.Cell cell = tiledLayer.getCell(newX, newY);
+            if (cell != null) {
+                cell.setTile(null);
+            }
+        }
         return true;
     }
 

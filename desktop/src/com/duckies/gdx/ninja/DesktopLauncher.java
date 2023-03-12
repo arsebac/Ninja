@@ -11,6 +11,6 @@ public class DesktopLauncher {
 		config.setWindowedMode(1024, 720);
 		config.useVsync(true);
 		config.setForegroundFPS(60);
-		new Lwjgl3Application(new MapGeneration(), config);
+		new Lwjgl3Application(new NinjaGame(), config);
 	}
 }

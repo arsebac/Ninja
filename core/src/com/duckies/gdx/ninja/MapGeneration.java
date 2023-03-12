@@ -1,20 +1,12 @@
 package com.duckies.gdx.ninja;
 
-import java.util.Arrays;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.objects.TextureMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
@@ -22,15 +14,14 @@ import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.duckies.gdx.ninja.progressbar.HealthBar;
+import com.duckies.gdx.ninja.progressbar.LoadingBarWithBorders;
 
-import java.util.Map;
+import java.util.Arrays;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-
-import com.badlogic.gdx.math.Vector2;
 
 public class MapGeneration extends ApplicationAdapter implements InputProcessor {
     TiledMap tiledMap;
@@ -47,10 +38,15 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
 
     private Player player;
 
-    private ProgressBar progressBar;
+    private Stage stage;
+    private HealthBar healthBar;
+    private LoadingBarWithBorders loadingBarWithBorders;
+    private long lastUpdate = 0L;
 
     @Override
     public void create() {
+        stage = new Stage();
+
         float w = Gdx.graphics.getWidth();
         float h = Gdx.graphics.getHeight();
 
@@ -64,22 +60,37 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
 
         player = new Player("Sam.png");
 
-        debugTile = new DebugTile(tiledMap);
 
         TextureMapObject tmo = player.createTextureMapObject(w / 2, h / 2);
 
         objectLayer = tiledMap.getLayers().get(5);
 
-        addProgressBar();
+        addActors();
 
         objectLayer.getObjects().add(tmo);
     }
 
-    private void addProgressBar() {
-        ProgressBar.ProgressBarStyle style = new ProgressBar.ProgressBarStyle();
-        Texture texture = new Texture(Gdx.files.classpath("textBox.png"));
-        style.background = new TextureRegionDrawable(new TextureRegion(texture));
-        progressBar = new ProgressBar(0.0f, 100f, 1, false, style);
+    private void addActors() {
+        addHealthBarActor();
+        addLoadingBarActor();
+        addDebugTileActor();
+    }
+
+    private void addHealthBarActor() {
+        healthBar = new HealthBar(100, 10);
+        healthBar.setPosition(30, 30);
+        stage.addActor(healthBar);
+    }
+
+    private void addLoadingBarActor() {
+        loadingBarWithBorders = new LoadingBarWithBorders(100, 20);
+        loadingBarWithBorders.setPosition(30, 5);
+        stage.addActor(loadingBarWithBorders);
+    }
+
+    private void addDebugTileActor() {
+        debugTile = new DebugTile(tiledMap);
+        stage.addActor(debugTile);
     }
 
     @Override
@@ -87,24 +98,37 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
 
         sb.setProjectionMatrix(camera.combined);
 
-        Gdx.gl.glClearColor(1, 0, 0, 1);
+        Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         updateCharacterPositionAndTexture();
 
+
         camera.update();
         tiledMapRenderer.setView(camera);
 
+
         sb.begin();
+
         tiledMapRenderer.render();
 
-        progressBar.draw(sb, 1);
+
+        //progressBar.draw(sb, 1);
 
         //  Vector3 projected = camera.project(new Vector3(textX, textY, 0));
-        debugTile.draw(sb);
+        // debugTile.draw(sb);
+
         sb.end();
 
+        if (System.currentTimeMillis() - lastUpdate > TimeUnit.SECONDS.toMillis(5)) {
+            healthBar.setValue(healthBar.getValue() - 0.1f);
+            loadingBarWithBorders.setValue(loadingBarWithBorders.getValue() + 0.1f);
+            lastUpdate = System.currentTimeMillis();
+        }
+
+        stage.draw();
+        stage.act();
     }
 
     private void updateCharacterPositionAndTexture() {
@@ -125,10 +149,6 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
             character.setX(player.getX());
             character.setY(player.getY());
 
-            progressBar.setValue(character.getX() / 25);
-            progressBar.setX(character.getX());
-            progressBar.setY(character.getY() / 200);
-
         }
         character.setTextureRegion(player.getTextureRegion());
     }
@@ -145,6 +165,7 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
         if (keycode == Input.Keys.NUM_3) debugTile.switchVisibility();
         return false;
     }
+
     private TextureMapObject getCharacter() {
         return (TextureMapObject) tiledMap.getLayers().get(5).getObjects().get(tiledMap.getLayers().get(5).getObjects().getCount() - 1);
     }

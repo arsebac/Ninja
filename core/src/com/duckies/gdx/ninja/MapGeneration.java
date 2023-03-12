@@ -17,7 +17,6 @@ import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
-import com.badlogic.gdx.utils.TimeUtils;
 
 import java.util.Map;
 
@@ -69,21 +68,16 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
 
         objectLayer = tiledMap.getLayers().get(5);
 
-        addProgressBarToLayer();
+        addProgressBar();
 
         objectLayer.getObjects().add(tmo);
     }
 
-    private void addProgressBarToLayer() {
-
-        Skin skin = new Skin(Gdx.files.classpath("data/uiskin.json"));
-        Pixmap pixmap = new Pixmap(10, 10, Pixmap.Format.RGBA8888);
-        pixmap.setColor(Color.WHITE);
-        pixmap.fill();
-        skin.add("green", new Texture(pixmap));
-
-        progressBar = new ProgressBar(0.0f, 100f, 2, false, skin);
-
+    private void addProgressBar() {
+        ProgressBar.ProgressBarStyle style = new ProgressBar.ProgressBarStyle();
+        Texture texture = new Texture(Gdx.files.classpath("textBox.png"));
+        style.background = new TextureRegionDrawable(new TextureRegion(texture));
+        progressBar = new ProgressBar(0.0f, 100f, 1, false, style);
     }
 
     private static Texture buildTexture(String path) {

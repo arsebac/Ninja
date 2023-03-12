@@ -14,6 +14,8 @@ public class PlayerInstance {
 
     private float positionY;
 
+    private Inventory inventory;
+
     public PlayerInstance() {
         currentHealth = 100;
         name = "player1";

@@ -37,6 +37,7 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
     private DebugTile debugTile;
 
     private Player player;
+    private Player pnj;
 
     private Stage stage;
     private HealthBar healthBar;
@@ -59,11 +60,13 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
         Gdx.input.setInputProcessor(this);
 
         player = new Player("Sam.png");
+        pnj = new Player("Shane.png");
 
 
         TextureMapObject tmo = player.createTextureMapObject(w / 2, h / 2);
 
         objectLayer = tiledMap.getLayers().get(5);
+        objectLayer.getObjects().add(pnj.createTextureMapObject(30 * 16, 30* 16));
 
         addActors();
 

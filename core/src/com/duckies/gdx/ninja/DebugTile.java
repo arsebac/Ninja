@@ -3,7 +3,6 @@ package com.duckies.gdx.ninja;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -14,72 +13,79 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 public class DebugTile extends Actor {
 
 
-    private final TiledMap tiledMap;
-    private boolean enable;
-    private BitmapFont font;
+	private final TiledMap tiledMap;
+	private boolean enable;
+	private BitmapFont font;
 
-    private float textX;
-    private float textY;
+	private float tileX;
+	private float tileY;
 
-    private int layerWidth;
-    private int layerHeight;
+	private int layerWidth;
+	private int layerHeight;
+	private float characterX;
+	private float characterY;
 
-    public DebugTile(TiledMap tiledMap) {
-        font = new BitmapFont(Gdx.files.internal("cascadia.fnt"), false);
+	public DebugTile(TiledMap tiledMap) {
+		font = new BitmapFont(Gdx.files.internal("cascadia.fnt"), false);
 
-        this.textX = 30;
-        this.textY = Gdx.graphics.getHeight() - 50;
+		this.tileX = 30;
+		this.tileY = Gdx.graphics.getHeight() - 50;
 
-        this.tiledMap = tiledMap;
 
-        this.enable = true;
+		this.characterX = Gdx.graphics.getWidth() / 2f;
+		this.characterY = Gdx.graphics.getHeight() / 2f;
 
-        for (int i = 0; i < tiledMap.getLayers().getCount(); i++) {
-            if (!(tiledMap.getLayers().get(i) instanceof TiledMapTileLayer)) {
-                continue;
-            }
-            TiledMapTileLayer layer = (TiledMapTileLayer) tiledMap.getLayers().get(i);
-            layerHeight = layer.getTileHeight();
-            layerWidth = layer.getTileWidth();
-            break;
-        }
-    }
+		this.tiledMap = tiledMap;
 
-    @Override
-    public void draw(Batch batch, float parentAlpha) {
+		this.enable = true;
 
-        if (!enable) {
-            return;
-        }
+		for (int i = 0; i < tiledMap.getLayers().getCount(); i++) {
+			if (!(tiledMap.getLayers().get(i) instanceof TiledMapTileLayer)) {
+				continue;
+			}
+			TiledMapTileLayer layer = (TiledMapTileLayer) tiledMap.getLayers().get(i);
+			layerHeight = layer.getTileHeight();
+			layerWidth = layer.getTileWidth();
+			break;
+		}
+	}
 
-        StringBuilder debugDescription = new StringBuilder("(" + (textX / layerHeight) + "," + (textY / layerWidth) + ") " +
-                "\n");
+	@Override
+	public void draw(Batch batch, float parentAlpha) {
 
-        for (int i = 0; i < tiledMap.getLayers().getCount(); i++) {
-            if (!(tiledMap.getLayers().get(i) instanceof TiledMapTileLayer layer)) {
-                continue;
-            }
+		if (!enable) {
+			return;
+		}
 
-            int x = (int) ((textX / layer.getTileHeight()));
-            int y = (int) ((textY / layer.getTileWidth()));
-            TiledMapTileLayer.Cell cell = layer.getCell(x, y);
-            debugDescription.append("Layer '").append(layer.getName()).append("' : ");
-            if (cell != null && cell.getTile() != null) {
-                debugDescription.append(cell.getTile().getId()).append("\n");
-            } else {
-                debugDescription.append("null\n");
-            }
-        }
-        font.draw(batch, debugDescription.toString(), textX, textY);
+		StringBuilder debugDescription =
+				new StringBuilder("(" + (characterX / layerHeight) + "," + (characterY / layerWidth) + ") " +
+						"\n");
 
-    }
+		for (int i = 0; i < tiledMap.getLayers().getCount(); i++) {
+			if (!(tiledMap.getLayers().get(i) instanceof TiledMapTileLayer layer)) {
+				continue;
+			}
 
-    public void translate(float speedX, float speedY) {
-      /*  this.textX += speedX;
-        this.textY += speedY;*/
-    }
+			int x = (int) ((characterX / layer.getTileHeight()));
+			int y = (int) ((characterY / layer.getTileWidth()));
+			TiledMapTileLayer.Cell cell = layer.getCell(x, y);
+			debugDescription.append("Layer '").append(layer.getName()).append("' : ");
+			if (cell != null && cell.getTile() != null) {
+				debugDescription.append(cell.getTile().getId()).append("\n");
+			} else {
+				debugDescription.append("null\n");
+			}
+		}
+		font.draw(batch, debugDescription.toString(), tileX, tileY);
 
-    public void switchVisibility() {
-        enable = !enable;
-    }
+	}
+
+	public void translate(float speedX, float speedY) {
+		this.characterX += speedX;
+		this.characterY += speedY;
+	}
+
+	public void switchVisibility() {
+		enable = !enable;
+	}
 }

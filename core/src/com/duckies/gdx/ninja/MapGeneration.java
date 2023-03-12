@@ -46,6 +46,7 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
 
     @Override
     public void create() {
+
         stage = new Stage();
 
         float w = Gdx.graphics.getWidth();
@@ -66,11 +67,12 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
         TextureMapObject tmo = player.createTextureMapObject(w / 2, h / 2);
 
         objectLayer = tiledMap.getLayers().get(5);
-        objectLayer.getObjects().add(pnj.createTextureMapObject(30 * 16, 30* 16));
+        objectLayer.getObjects().add(pnj.createTextureMapObject(30 * 16, 30 * 16));
 
         addActors();
 
         objectLayer.getObjects().add(tmo);
+
     }
 
     private void addActors() {
@@ -124,8 +126,9 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
 
         sb.end();
 
+
         if (System.currentTimeMillis() - lastUpdate > TimeUnit.SECONDS.toMillis(5)) {
-            healthBar.setValue(healthBar.getValue() - 0.1f);
+            healthBar.setValue(healthBar.getValue() - healthBar.getStepSize());
             loadingBarWithBorders.setValue(loadingBarWithBorders.getValue() + 0.1f);
             lastUpdate = System.currentTimeMillis();
         }
@@ -185,7 +188,7 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
 
         float w = Gdx.graphics.getWidth();
         float h = Gdx.graphics.getHeight();
-        Vector2 diffWithMiddleOfScreen = new Vector2(screenX - w / 2, (h -screenY) - h / 2);
+        Vector2 diffWithMiddleOfScreen = new Vector2(screenX - w / 2, (h - screenY) - h / 2);
 
         double distance = Math.sqrt(diffWithMiddleOfScreen.x * diffWithMiddleOfScreen.x + diffWithMiddleOfScreen.y + diffWithMiddleOfScreen.y);
         if (distance > 100) {
@@ -196,7 +199,6 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
         TextureMapObject character = getCharacter();
         int newX = (int) (character.getX() + diffWithMiddleOfScreen.x) / 16;
         int newY = (int) (character.getY() + diffWithMiddleOfScreen.y) / 16;
-
 
 
         // Remove tiles

@@ -1,11 +1,5 @@
 package com.duckies.gdx.ninja;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
@@ -20,12 +14,24 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.duckies.gdx.ninja.actor.TilemapActor;
+import com.duckies.gdx.ninja.gui.Box2DWorld;
+import com.duckies.gdx.ninja.gui.Control;
+import com.duckies.gdx.ninja.gui.SquareMenu;
 import com.duckies.gdx.ninja.pojo.PlayerInstance;
 import com.duckies.gdx.ninja.progressbar.HealthBar;
 import com.duckies.gdx.ninja.progressbar.LoadingBarWithBorders;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
 public class GameScreen implements InputProcessor, Screen {
     private final NinjaGame game;
+    private final Box2DWorld box2D;
+    private final SquareMenu squareMenu;
     TiledMap tiledMap;
 
     OrthographicCamera camera;
@@ -46,9 +52,12 @@ public class GameScreen implements InputProcessor, Screen {
     private LoadingBarWithBorders loadingBarWithBorders;
     private long lastUpdate = 0L;
 
+    public Control control;
+
     public GameScreen(NinjaGame game) {
         this(game, new PlayerInstance());
     }
+
     public GameScreen(NinjaGame game, PlayerInstance p) {
         this.game = game;
         stage = new Stage();
@@ -67,6 +76,12 @@ public class GameScreen implements InputProcessor, Screen {
         tiledMapRenderer = new OrthogonalTiledMapRendererWithSprites(tiledMap);
         Gdx.input.setInputProcessor(this);
 
+        int displayW = Gdx.graphics.getWidth();
+        int displayH = Gdx.graphics.getHeight();
+        control = new Control(displayW, displayH, ((OrthographicCamera) stage.getCamera()));
+        Gdx.input.setInputProcessor(control);
+        control.reset = true;
+
         TiledMapTileLayer pathsLayer = (TiledMapTileLayer) tiledMap.getLayers().get("Paths");
         TiledMapTileLayer backLayer = (TiledMapTileLayer) tiledMap.getLayers().get("Back");
 
@@ -79,9 +94,14 @@ public class GameScreen implements InputProcessor, Screen {
         objectLayer.getObjects().add(pnj.createTextureMapObject(30 * 16, 30 * 16));
         objectLayer.getObjects().add(player.createTextureMapObject(w / 2, h / 2));
 
+
+        box2D = new Box2DWorld();
+        control.reset = true;
+        squareMenu = new SquareMenu(this);
     }
 
     private void addActors() {
+
         addHealthBarActor();
         addLoadingBarActor();
         addDebugTileActor();
@@ -113,6 +133,10 @@ public class GameScreen implements InputProcessor, Screen {
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+        control.processedClick = squareMenu.checkClick(control.mouseClickPos, control.processedClick);
+        control.processedClick = squareMenu.build.checkClick(control.mouseClickPos, control.processedClick);
+        squareMenu.checkHover(control.mousePos);
+
         updateCharacterPositionAndTexture();
 
         updatePnjsPositions();
@@ -124,8 +148,12 @@ public class GameScreen implements InputProcessor, Screen {
         sb.begin();
 
         tiledMapRenderer.render();
+        squareMenu.draw(sb);
 
         sb.end();
+
+        box2D.tick(camera, control);
+        control.processedClick = true;
 
 
         if (System.currentTimeMillis() - lastUpdate > TimeUnit.SECONDS.toMillis(5)) {
@@ -156,6 +184,8 @@ public class GameScreen implements InputProcessor, Screen {
             // We need to update camera position
             camera.translate(translation.x, translation.y);
             debugTile.translate(translation.x, translation.y);
+
+            control.translate(translation);
 
         }
     }

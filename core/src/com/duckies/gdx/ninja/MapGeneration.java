@@ -1,5 +1,11 @@
 package com.duckies.gdx.ninja;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -17,11 +23,6 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.duckies.gdx.ninja.progressbar.HealthBar;
 import com.duckies.gdx.ninja.progressbar.LoadingBarWithBorders;
-
-import java.util.Arrays;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 public class MapGeneration extends ApplicationAdapter implements InputProcessor {
     TiledMap tiledMap;
@@ -59,9 +60,11 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
         tiledMapRenderer = new OrthogonalTiledMapRendererWithSprites(tiledMap);
         Gdx.input.setInputProcessor(this);
 
-        player = new Player("Sam.png");
-        pnj = new Player("Shane.png");
+        TiledMapTileLayer pathsLayer = (TiledMapTileLayer) tiledMap.getLayers().get("Paths");
+        TiledMapTileLayer backLayer = (TiledMapTileLayer) tiledMap.getLayers().get("Back");
 
+        player = new Player(SpritesEnum.SAM, pathsLayer, backLayer);
+        pnj = new Player(SpritesEnum.SHANE, pathsLayer, backLayer);
 
         TextureMapObject tmo = player.createTextureMapObject(w / 2, h / 2);
 
@@ -107,6 +110,7 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
 
         updateCharacterPositionAndTexture();
 
+        updatePnjsPositions();
 
         camera.update();
         tiledMapRenderer.setView(camera);
@@ -115,12 +119,6 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
         sb.begin();
 
         tiledMapRenderer.render();
-
-
-        //progressBar.draw(sb, 1);
-
-        //  Vector3 projected = camera.project(new Vector3(textX, textY, 0));
-        // debugTile.draw(sb);
 
         sb.end();
 
@@ -134,26 +132,25 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
         stage.act();
     }
 
-    private void updateCharacterPositionAndTexture() {
-        TextureMapObject character = getCharacter();
+    private void updatePnjsPositions() {
+        int size = DirectionEnum.values().length;
+        int item = (int) ((System.currentTimeMillis() % 4000) / 1000);
+        pnj.moveIfPossible(Collections.singleton(DirectionEnum.values()[item]));
+    }
 
+    private void updateCharacterPositionAndTexture() {
         Set<DirectionEnum> directionAsked = Arrays.stream(DirectionEnum.values())
                 .filter(direction -> Gdx.input.isKeyPressed(direction.getKey()))
                 .collect(Collectors.toSet());
 
-        Vector2 translation = player.moveIfPossible(directionAsked, (TiledMapTileLayer) tiledMap.getLayers().get(
-                "Paths"), (TiledMapTileLayer) tiledMap.getLayers().get("Back"));
+        Vector2 translation = player.moveIfPossible(directionAsked);
 
         if (translation.x != 0f || translation.y != 0f) {
             // We need to update camera position
             camera.translate(translation.x, translation.y);
             debugTile.translate(translation.x, translation.y);
 
-            character.setX(player.getX());
-            character.setY(player.getY());
-
         }
-        character.setTextureRegion(player.getTextureRegion());
     }
 
     @Override
@@ -167,10 +164,6 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
         if (keycode == Input.Keys.NUM_2) tiledMap.getLayers().get(1).setVisible(!tiledMap.getLayers().get(1).isVisible());
         if (keycode == Input.Keys.NUM_3) debugTile.switchVisibility();
         return false;
-    }
-
-    private TextureMapObject getCharacter() {
-        return (TextureMapObject) tiledMap.getLayers().get(5).getObjects().get(tiledMap.getLayers().get(5).getObjects().getCount() - 1);
     }
 
     @Override
@@ -193,9 +186,8 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
             return false;
         }
 
-        TextureMapObject character = getCharacter();
-        int newX = (int) (character.getX() + diffWithMiddleOfScreen.x) / 16;
-        int newY = (int) (character.getY() + diffWithMiddleOfScreen.y) / 16;
+        int newX = (int) (player.getX() + diffWithMiddleOfScreen.x) / 16;
+        int newY = (int) (player.getY() + diffWithMiddleOfScreen.y) / 16;
 
 
 

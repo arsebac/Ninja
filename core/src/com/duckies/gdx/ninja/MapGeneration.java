@@ -1,7 +1,10 @@
 package com.duckies.gdx.ninja;
 
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
@@ -16,6 +19,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.objects.TextureMapObject;
 import com.badlogic.gdx.maps.tiled.*;
+import com.badlogic.gdx.math.Vector2;
 
 public class MapGeneration extends ApplicationAdapter implements InputProcessor {
 
@@ -30,9 +34,6 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
     SpriteBatch sb;
     MapLayer objectLayer;
 
-    TextureRegion textureRegion;
-
-    private static final float SPEED = 15;
 
     private DirectionEnum currentDirection;
     private Long startOfCurrentDirection;
@@ -95,71 +96,31 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
     }
 
     private void updateCharacterPositionAndTexture() {
-        boolean isIdle = true;
         TextureMapObject character = getCharacter();
 
-        for (Map.Entry<DirectionEnum, Animation<TextureRegion>> textureDirectionEntry :
-                player.getAnimationByDirection().entrySet()) {
-            DirectionEnum direction = textureDirectionEntry.getKey();
+        Set<DirectionEnum> directionAsked = Arrays.stream(DirectionEnum.values())
+                .filter(direction -> Gdx.input.isKeyPressed(direction.getKey()))
+                .collect(Collectors.toSet());
 
-            if (!Gdx.input.isKeyPressed(direction.getKey())) {
-                continue;
-            }
+        Vector2 translation = player.moveIfPossible(directionAsked, (TiledMapTileLayer) tiledMap.getLayers().get(
+                "Paths"), (TiledMapTileLayer) tiledMap.getLayers().get("Back"));
 
-            float speedX = direction.getX() * Gdx.graphics.getDeltaTime() * SPEED;
-            float speedY = direction.getY() * Gdx.graphics.getDeltaTime() * SPEED;
+        if (translation.x != 0f || translation.y != 0f) {
+            // We need to update camera position
+            camera.translate(translation.x, translation.y);
+            debugTile.translate(translation.x, translation.y);
 
-
-            float newPositionX = character.getX() + speedX;
-            float newPositionY = character.getY() + speedY;
-
-            //if (detectCollision(newPositionX, new))
-
-            TiledMapTileLayer layer = (TiledMapTileLayer) tiledMap.getLayers().get("Front");
-
-            int x = (int) ((character.getX() / layer.getTileHeight()));
-            int y = (int) ((character.getY() / layer.getTileWidth()));
-            TiledMapTileLayer.Cell cell = layer.getCell(x, y);
-            if (cell != null) {
-                if (cell.getTile().getProperties().get("walkable") != null) {
-                    boolean walkable = Boolean.parseBoolean(cell.getTile().getProperties().get("walkable").toString());
-                    if (!walkable) {
-                        isIdle = true;
-                        break;
-                    }
-                }
-            }
-
-            camera.translate(speedX, speedY);
-            character.setX(newPositionX);
-            character.setY(newPositionY);
-            debugTile.translate(speedX, speedY);
-
-            if (currentDirection != direction) {
-                // We need to update direction
-                currentDirection = direction;
-                startOfCurrentDirection = System.currentTimeMillis();
-            }
-            updateCharacterTexture(character, textureDirectionEntry.getValue());
-
-
-            isIdle = false;
-
+            character.setX(player.getX());
+            character.setY(player.getY());
 
         }
 
-        if (isIdle) {
-            if (currentDirection != null) {
-                currentDirection = null;
-                startOfCurrentDirection = System.currentTimeMillis();
-            }
-            updateCharacterTexture(character, player.getIdleTexture());
-        }
+        character.setTextureRegion(player.getTextureRegion());
+
     }
 
     @Override
     public boolean keyDown(int keycode) {
-
         return false;
     }
 
@@ -170,18 +131,12 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
         if (keycode == Input.Keys.NUM_3) debugTile.switchVisibility();
         return false;
     }
-
-    private void updateCharacterTexture(TextureMapObject character, Animation<TextureRegion> texture) {
-        character.setTextureRegion(texture.getKeyFrame((System.currentTimeMillis() - startOfCurrentDirection) / 1000f));
-    }
-
     private TextureMapObject getCharacter() {
         return (TextureMapObject) tiledMap.getLayers().get(5).getObjects().get(tiledMap.getLayers().get(5).getObjects().getCount() - 1);
     }
 
     @Override
     public boolean keyTyped(char character) {
-
         return false;
     }
 

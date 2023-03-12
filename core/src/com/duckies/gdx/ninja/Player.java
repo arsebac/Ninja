@@ -18,7 +18,7 @@ public class Player {
 
 	private static final int FRAME_COLS = 4, FRAME_ROWS = 14;
 	private static final int PLAYER_WIDTH = 16;
-	private static final int PLAYER_HEIGHT = 16;
+	private static final int PLAYER_HEIGHT = 32;
 
 	private static final float SPEED = 5;
 

@@ -60,7 +60,6 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
 
         player = new Player("Sam.png");
 
-        debugTile = new DebugTile(tiledMap);
 
         TextureMapObject tmo = player.createTextureMapObject(w / 2, h / 2);
 
@@ -74,18 +73,24 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
     private void addActors() {
         addHealthBarActor();
         addLoadingBarActor();
-    }
-
-    private void addLoadingBarActor() {
-        loadingBarWithBorders = new LoadingBarWithBorders(100, 20);
-        loadingBarWithBorders.setPosition(camera.direction.x + 30, camera.direction.y + 5);
-        stage.addActor(loadingBarWithBorders);
+        addDebugTileActor();
     }
 
     private void addHealthBarActor() {
         healthBar = new HealthBar(100, 10);
-        healthBar.setPosition(camera.direction.x + 30, camera.direction.y + 30);
+        healthBar.setPosition(30, 30);
         stage.addActor(healthBar);
+    }
+
+    private void addLoadingBarActor() {
+        loadingBarWithBorders = new LoadingBarWithBorders(100, 20);
+        loadingBarWithBorders.setPosition(30, 5);
+        stage.addActor(loadingBarWithBorders);
+    }
+
+    private void addDebugTileActor() {
+        debugTile = new DebugTile(tiledMap);
+        stage.addActor(debugTile);
     }
 
     @Override
@@ -112,7 +117,7 @@ public class MapGeneration extends ApplicationAdapter implements InputProcessor 
         //progressBar.draw(sb, 1);
 
         //  Vector3 projected = camera.project(new Vector3(textX, textY, 0));
-        debugTile.draw(sb);
+        // debugTile.draw(sb);
 
         sb.end();
 

@@ -21,35 +21,41 @@ import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.duckies.gdx.ninja.pojo.PlayerInstance;
+import com.duckies.gdx.ninja.pojo.Warp;
 import com.duckies.gdx.ninja.progressbar.HealthBar;
 import com.duckies.gdx.ninja.progressbar.LoadingBarWithBorders;
+import com.duckies.gdx.ninja.saving.GameObjectPersistence;
 
 public class GameScreen implements InputProcessor, Screen {
     private final NinjaGame game;
-    TiledMap tiledMap;
+
+    private final TiledMapWrapper tileMapWrapper;
+
+    private final PlayerInstance playerInstance;
 
     OrthographicCamera camera;
 
-    TiledMapRenderer tiledMapRenderer;
-
     SpriteBatch sb;
-
-    MapLayer objectLayer;
 
     private DebugTile debugTile;
 
-    private Player player;
-    private Player pnj;
+    private final Player player;
 
-    private Stage stage;
+    private final Player pnj;
+
+    private final Stage stage;
+
     private HealthBar healthBar;
+
     private LoadingBarWithBorders loadingBarWithBorders;
+
     private long lastUpdate = 0L;
 
     public GameScreen(NinjaGame game) {
         this(game, new PlayerInstance());
     }
     public GameScreen(NinjaGame game, PlayerInstance p) {
+        this.playerInstance = p;
         this.game = game;
         stage = new Stage();
 
@@ -60,25 +66,27 @@ public class GameScreen implements InputProcessor, Screen {
         camera.setToOrtho(false, w, h);
         camera.update();
 
-        tiledMap = new TmxMapLoader().load("farm/Farm.tmx");
+        tileMapWrapper = new TiledMapWrapper(p.getCurrentMapName());
+
+
+        float x = playerInstance.getPositionX() * tileMapWrapper.getTileWidth();
+        float y = playerInstance.getPositionY() * tileMapWrapper.getTileHeight();
 
         sb = new SpriteBatch();
 
-        tiledMapRenderer = new OrthogonalTiledMapRendererWithSprites(tiledMap);
         Gdx.input.setInputProcessor(this);
 
-        TiledMapTileLayer pathsLayer = (TiledMapTileLayer) tiledMap.getLayers().get("Paths");
-        TiledMapTileLayer backLayer = (TiledMapTileLayer) tiledMap.getLayers().get("Back");
-
-        player = new Player(SpritesEnum.SAM, pathsLayer, backLayer);
-        pnj = new Player(SpritesEnum.SHANE, pathsLayer, backLayer);
+        player = new Player(SpritesEnum.SAM, tileMapWrapper);
+        pnj = new Player(SpritesEnum.SHANE, tileMapWrapper);
 
         addActors();
 
-        objectLayer = tiledMap.getLayers().get(5);
-        objectLayer.getObjects().add(pnj.createTextureMapObject(30 * 16, 30 * 16));
-        objectLayer.getObjects().add(player.createTextureMapObject(w / 2, h / 2));
+        tileMapWrapper.getObjectLayerObjects().add(pnj.createTextureMapObject(w / 2, h / 2));
 
+        // Rotate camera in order to let her
+        tileMapWrapper.getObjectLayerObjects().add(player.createTextureMapObject(x,y));
+        // Place camera with player centered
+        camera.translate(x - camera.position.x, y - camera.position.y);
     }
 
     private void addActors() {
@@ -100,7 +108,7 @@ public class GameScreen implements InputProcessor, Screen {
     }
 
     private void addDebugTileActor() {
-        debugTile = new DebugTile(tiledMap);
+        debugTile = new DebugTile(tileMapWrapper, player);
         stage.addActor(debugTile);
     }
 
@@ -118,12 +126,12 @@ public class GameScreen implements InputProcessor, Screen {
         updatePnjsPositions();
 
         camera.update();
-        tiledMapRenderer.setView(camera);
+        tileMapWrapper.getTiledMapRenderer().setView(camera);
 
 
         sb.begin();
 
-        tiledMapRenderer.render();
+        tileMapWrapper.getTiledMapRenderer().render();
 
         sb.end();
 
@@ -139,9 +147,7 @@ public class GameScreen implements InputProcessor, Screen {
     }
 
     private void updatePnjsPositions() {
-        int size = DirectionEnum.values().length;
         int item = (int) ((System.currentTimeMillis() % 4000) / 1000);
-        System.out.println(item);
         pnj.moveIfPossible(Collections.singleton(DirectionEnum.values()[item]));
     }
 
@@ -155,8 +161,22 @@ public class GameScreen implements InputProcessor, Screen {
         if (translation.x != 0f || translation.y != 0f) {
             // We need to update camera position
             camera.translate(translation.x, translation.y);
-            debugTile.translate(translation.x, translation.y);
 
+            Warp warp = tileMapWrapper.getWarp(player.getTileCellX(), player.getTileCellY());
+
+            if (System.currentTimeMillis() - playerInstance.getLastSave() > 10000) {
+                playerInstance.setLastSave(System.currentTimeMillis());
+                GameObjectPersistence.save(playerInstance.getId(), playerInstance);
+            }
+
+            if (warp != null) {
+                System.out.println("doWarpMap " + warp.getArrivalMap());
+                tileMapWrapper.doWarpMap(warp);
+                playerInstance.setPosition(warp.getArrivalCoors());
+                playerInstance.setCurrentMapName(warp.getArrivalMap() + ".tmx");
+
+                game.setScreen(new GameScreen(game, playerInstance));
+            }
         }
     }
 
@@ -167,8 +187,6 @@ public class GameScreen implements InputProcessor, Screen {
 
     @Override
     public boolean keyUp(int keycode) {
-        if (keycode == Input.Keys.NUM_1) tiledMap.getLayers().get(0).setVisible(!tiledMap.getLayers().get(0).isVisible());
-        if (keycode == Input.Keys.NUM_2) tiledMap.getLayers().get(1).setVisible(!tiledMap.getLayers().get(1).isVisible());
         if (keycode == Input.Keys.NUM_3) debugTile.switchVisibility();
         return false;
     }
@@ -198,17 +216,7 @@ public class GameScreen implements InputProcessor, Screen {
 
 
         // Remove tiles
-        // TODO: check if correct tool is used to remove cell
-        for (MapLayer layer : tiledMap.getLayers()) {
-            if (!(layer instanceof TiledMapTileLayer tiledLayer) || "Back".equals(layer.getName())) {
-                continue;
-            }
-
-            TiledMapTileLayer.Cell cell = tiledLayer.getCell(newX, newY);
-            if (cell != null) {
-                cell.setTile(null);
-            }
-        }
+        tileMapWrapper.removeCellTile(newX, newY);
         return true;
     }
 
@@ -261,7 +269,6 @@ public class GameScreen implements InputProcessor, Screen {
     @Override
     public void dispose() {
         stage.dispose();
-        tiledMap.dispose();
-
+        tileMapWrapper.dispose();
     }
 }

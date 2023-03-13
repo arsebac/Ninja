@@ -1,5 +1,7 @@
 package com.duckies.gdx.ninja.pojo;
 
+import java.util.Random;
+
 import com.badlogic.gdx.math.Vector2;
 
 public class PlayerInstance {
@@ -16,11 +18,16 @@ public class PlayerInstance {
 
     private Inventory inventory;
 
+    private float lastSave;
+    private int id;
+
     public PlayerInstance() {
         currentHealth = 100;
+        id = new Random().nextInt();
         name = "player1";
         currentMapName = "farm.tmx";
-        setPosition(new Vector2(32, 22.5f));
+        setPosition(new Vector2(67, 47));
+        lastSave = System.currentTimeMillis();
     }
 
     public PlayerInstance(int currentHealth, String name, String currentMapName, Vector2 position) {
@@ -91,4 +98,27 @@ public class PlayerInstance {
     }
 
 
+    public float getLastSave() {
+        return lastSave;
+    }
+
+    public void setLastSave(float lastSave) {
+        this.lastSave = lastSave;
+    }
+
+    public Inventory getInventory() {
+        return inventory;
+    }
+
+    public void setInventory(Inventory inventory) {
+        this.inventory = inventory;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 }

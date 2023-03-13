@@ -27,13 +27,8 @@ public class MainMenuScreen implements Screen, InputProcessor {
 
         Gdx.input.setInputProcessor(this);
 
-        // Load from y = 186 - 245 x = 0 - 295
     }
 
-    @Override
-    public void show() {
-
-    }
 
     @Override
     public void render(float delta) {
@@ -81,7 +76,10 @@ public class MainMenuScreen implements Screen, InputProcessor {
         return false;
     }
 
+    @Override
+    public void show() {
 
+    }
     @Override
     public void resize(int width, int height) {
 

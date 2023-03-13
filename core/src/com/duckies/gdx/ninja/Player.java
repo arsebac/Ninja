@@ -25,15 +25,17 @@ public class Player {
 
     private DirectionEnum currentDirection;
     private Long startOfCurrentDirection;
-    private EnumMap<DirectionEnum, Animation<TextureRegion>> animationByDirection = new EnumMap<>(DirectionEnum.class);
-    private PlayerInstance playerInstance;
+    private final EnumMap<DirectionEnum, Animation<TextureRegion>> animationByDirection;
+    private final PlayerInstance playerInstance;
     private TextureMapObject textureMapObject;
 
-    public Player(SpritesEnum sprite, TiledMapTileLayer pathsLayer, TiledMapTileLayer backLayer) {
+    public Player(SpritesEnum sprite, TiledMapWrapper tiledMap) {
+
         this.playerInstance = new PlayerInstance();
 
-        this.pathsLayer = pathsLayer;
-        this.backLayer = backLayer;
+        this.pathsLayer = tiledMap.getPathsLayer();
+
+        this.backLayer = tiledMap.getBackLayer();
 
         this.animationByDirection = sprite.buildAnimationByTexture();
 
@@ -42,7 +44,6 @@ public class Player {
         textureRegion = animationByDirection.get(DirectionEnum.DOWN).getKeyFrame(0);
 
         this.idleAnimation = new Animation<>(1000, textureRegion);
-
     }
 
     public TextureMapObject createTextureMapObject(float x, float y) {
@@ -100,15 +101,11 @@ public class Player {
         for (Vector2 vector : cells) {
             TiledMapTileLayer.Cell cell = pathsLayer.getCell((int) vector.x, (int) vector.y);
             if (cell != null && cell.getTile() != null && !IGNORED.contains(cell.getTile().getId())) {
-                System.out.println("Collition with Cell ( " + ((int) vector.x) + "," + ((int) vector.y) + ") : " + (cell.getTile().getId()));
-
                 return true;
             }
 
             cell = backLayer.getCell((int) vector.x, (int) vector.y);
             if (cell != null && cell.getTile() != null && "F".equals(cell.getTile().getProperties().get("Passable"))) {
-                System.out.println(
-                        "Collition with Cell ( " + ((int) vector.x) + "," + ((int) vector.y) + ") : " + (cell.getTile().getId()) + " : Passable");
                 return true;
             }
 
@@ -172,5 +169,13 @@ public class Player {
 
     public float getY() {
         return playerInstance.getPositionY();
+    }
+
+    public int getTileCellX() {
+        return (int) (playerInstance.getPositionX() / pathsLayer.getTileWidth());
+    }
+
+    public int getTileCellY() {
+        return (int) (playerInstance.getPositionY() / pathsLayer.getTileHeight());
     }
 }

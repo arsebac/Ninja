@@ -9,8 +9,9 @@ public class Button extends Entity {
     public Rectangle hitbox;
     public Texture icon;
     public Entity selector;
+    public Texture content;
 
-    public Button(float x, float y, float width, float height, Texture texture, Entity selector) {
+    public Button(float x, float y, float width, float height, Texture texture, Entity selector, Texture content) {
         super();
         this.texture = texture;
         this.selector = selector;
@@ -18,7 +19,8 @@ public class Button extends Entity {
         this.pos.y = y;
         this.width = width;
         this.height = height;
-        hitbox = new Rectangle(pos.x, pos.y, width, height);
+        this.hitbox = new Rectangle(pos.x, pos.y, width, height);
+        this.content = content;
     }
 
     public void setOnClickListener(OnClickListener listener) {
@@ -28,6 +30,7 @@ public class Button extends Entity {
     @Override
     public void draw(SpriteBatch batch) {
         if (texture != null) batch.draw(texture, pos.x, pos.y, width, height);
+        if (content != null) batch.draw(content, pos.x, pos.y, width, height);
         if (icon != null) batch.draw(icon, pos.x, pos.y, width, height);
         if (isHovered() && selector != null) {
             selector.draw(batch);

@@ -10,7 +10,7 @@ public class BuildMenu extends Menu {
         addButtons(3, 14, 2, Media.pinkButton, Media.selector, 2);
         setInactive();
 
-        Button close = new Button(0, 0, Media.close_menu.getWidth() * scale, Media.close_menu.getHeight() * scale, Media.close_menu, null);
+        Button close = new Button(0, 0, Media.close_menu.getWidth() * scale, Media.close_menu.getHeight() * scale, Media.close_menu, null, null);
         close.pos.x = x + width - (Media.close_menu.getWidth() * scale) - (6 * scale);
         close.pos.y = height - (Media.close_menu.getHeight() * scale) - (6 * scale);
         close.updateHitbox();

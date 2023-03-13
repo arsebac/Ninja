@@ -99,7 +99,7 @@ public class Menu {
                 selector.pos.x = bx - ((selector.width - width) / 2);
                 selector.pos.y = by - ((selector.height - height) / 2);
 
-                buttons.add(new Button(bx, by, width, height, texture, selector));
+                buttons.add(new Button(bx, by, width, height, texture, selector, null));
             }
         }
     }

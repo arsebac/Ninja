@@ -1,11 +1,5 @@
 package com.duckies.gdx.ninja;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
@@ -20,20 +14,35 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.duckies.gdx.ninja.actor.TilemapActor;
+import com.duckies.gdx.ninja.gui.Box2DWorld;
+import com.duckies.gdx.ninja.gui.Control;
+import com.duckies.gdx.ninja.gui.SquareMenu;
 import com.duckies.gdx.ninja.pojo.PlayerInstance;
 import com.duckies.gdx.ninja.pojo.Warp;
 import com.duckies.gdx.ninja.progressbar.HealthBar;
 import com.duckies.gdx.ninja.progressbar.LoadingBarWithBorders;
 import com.duckies.gdx.ninja.saving.GameObjectPersistence;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
 public class GameScreen implements InputProcessor, Screen {
     private final NinjaGame game;
+
+    private final Box2DWorld box2D;
+
+    private final SquareMenu squareMenu;
+    TiledMap tiledMap;
 
     private final TiledMapWrapper tileMapWrapper;
 
     private final PlayerInstance playerInstance;
 
-    OrthographicCamera camera;
+    public OrthographicCamera camera;
 
     SpriteBatch sb;
 
@@ -51,9 +60,12 @@ public class GameScreen implements InputProcessor, Screen {
 
     private long lastUpdate = 0L;
 
+    public Control control;
+
     public GameScreen(NinjaGame game) {
         this(game, new PlayerInstance());
     }
+
     public GameScreen(NinjaGame game, PlayerInstance p) {
         this.playerInstance = p;
         this.game = game;
@@ -76,9 +88,18 @@ public class GameScreen implements InputProcessor, Screen {
 
         Gdx.input.setInputProcessor(this);
 
+        int displayW = Gdx.graphics.getWidth();
+        int displayH = Gdx.graphics.getHeight();
+        control = new Control(displayW, displayH, ((OrthographicCamera) stage.getCamera()));
+        Gdx.input.setInputProcessor(control);
+        control.reset = true;
+
+        TiledMapTileLayer pathsLayer = (TiledMapTileLayer) tiledMap.getLayers().get("Paths");
+        TiledMapTileLayer backLayer = (TiledMapTileLayer) tiledMap.getLayers().get("Back");
+
+
         player = new Player(SpritesEnum.SAM, tileMapWrapper);
         pnj = new Player(SpritesEnum.SHANE, tileMapWrapper);
-
         addActors();
 
         tileMapWrapper.getObjectLayerObjects().add(pnj.createTextureMapObject(w / 2, h / 2));
@@ -87,9 +108,14 @@ public class GameScreen implements InputProcessor, Screen {
         tileMapWrapper.getObjectLayerObjects().add(player.createTextureMapObject(x,y));
         // Place camera with player centered
         camera.translate(x - camera.position.x, y - camera.position.y);
+
+        box2D = new Box2DWorld();
+        control.reset = true;
+        squareMenu = new SquareMenu(this);
     }
 
     private void addActors() {
+
         addHealthBarActor();
         addLoadingBarActor();
         addDebugTileActor();
@@ -121,6 +147,10 @@ public class GameScreen implements InputProcessor, Screen {
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+        control.processedClick = squareMenu.checkClick(control.mouseClickPos, control.processedClick);
+        control.processedClick = squareMenu.build.checkClick(control.mouseClickPos, control.processedClick);
+        squareMenu.checkHover(control.mousePos);
+
         updateCharacterPositionAndTexture();
 
         updatePnjsPositions();
@@ -128,12 +158,16 @@ public class GameScreen implements InputProcessor, Screen {
         camera.update();
         tileMapWrapper.getTiledMapRenderer().setView(camera);
 
-
         sb.begin();
 
         tileMapWrapper.getTiledMapRenderer().render();
+        squareMenu.draw(sb);
+        // control.translate(new Vector2(camera.position.x, camera.position.y));
 
         sb.end();
+
+        box2D.tick(camera, control);
+        control.processedClick = true;
 
 
         if (System.currentTimeMillis() - lastUpdate > TimeUnit.SECONDS.toMillis(5)) {
@@ -152,8 +186,7 @@ public class GameScreen implements InputProcessor, Screen {
     }
 
     private void updateCharacterPositionAndTexture() {
-        Set<DirectionEnum> directionAsked = Arrays.stream(DirectionEnum.values())
-                .filter(direction -> Gdx.input.isKeyPressed(direction.getKey()))
+        Set<DirectionEnum> directionAsked = Arrays.stream(DirectionEnum.values()).filter(direction -> Gdx.input.isKeyPressed(direction.getKey()))
                 .collect(Collectors.toSet());
 
         Vector2 translation = player.moveIfPossible(directionAsked);
@@ -161,6 +194,8 @@ public class GameScreen implements InputProcessor, Screen {
         if (translation.x != 0f || translation.y != 0f) {
             // We need to update camera position
             camera.translate(translation.x, translation.y);
+
+            squareMenu.translate(translation.x, translation.y);
 
             Warp warp = tileMapWrapper.getWarp(player.getTileCellX(), player.getTileCellY());
 

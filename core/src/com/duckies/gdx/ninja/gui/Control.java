@@ -59,30 +59,10 @@ public class Control extends InputAdapter implements InputProcessor {
     @Override
     public boolean keyDown(int keyCode) {
         switch (keyCode) {
-            case Keys.DOWN:
-                down = true;
-                break;
-            case Keys.UP:
-                up = true;
-                break;
-            case Keys.LEFT:
-                left = true;
-                break;
-            case Keys.RIGHT:
-                right = true;
-                break;
-            case Keys.W:
-                up = true;
-                break;
-            case Keys.A:
-                left = true;
-                break;
-            case Keys.S:
-                down = true;
-                break;
-            case Keys.D:
-                right = true;
-                break;
+            case Keys.DOWN, Keys.S -> down = true;
+            case Keys.UP, Keys.W -> up = true;
+            case Keys.LEFT, Keys.A -> left = true;
+            case Keys.RIGHT, Keys.D -> right = true;
         }
         return false;
     }
@@ -90,45 +70,15 @@ public class Control extends InputAdapter implements InputProcessor {
     @Override
     public boolean keyUp(int keycode) {
         switch (keycode) {
-            case Keys.DOWN:
-                down = false;
-                break;
-            case Keys.UP:
-                up = false;
-                break;
-            case Keys.LEFT:
-                left = false;
-                break;
-            case Keys.RIGHT:
-                right = false;
-                break;
-            case Keys.W:
-                up = false;
-                break;
-            case Keys.A:
-                left = false;
-                break;
-            case Keys.S:
-                down = false;
-                break;
-            case Keys.D:
-                right = false;
-                break;
-            case Keys.E:
-                interact = true;
-                break;
-            case Keys.ESCAPE:
-                Gdx.app.exit();
-                break;
-            case Keys.BACKSPACE:
-                debug = !debug;
-                break;
-            case Keys.R:
-                reset = true;
-                break;
-            case Keys.I:
-                inventory = true;
-                break;
+            case Keys.DOWN, Keys.S -> down = false;
+            case Keys.UP, Keys.W -> up = false;
+            case Keys.LEFT, Keys.A -> left = false;
+            case Keys.RIGHT, Keys.D -> right = false;
+            case Keys.E -> interact = true;
+            case Keys.ESCAPE -> Gdx.app.exit();
+            case Keys.BACKSPACE -> debug = !debug;
+            case Keys.R -> reset = true;
+            case Keys.I -> inventory = true;
         }
         return false;
     }
@@ -179,7 +129,4 @@ public class Control extends InputAdapter implements InputProcessor {
         return false;
     }
 
-    public void translate(Vector2 translation) {
-        camera.translate(translation);
-    }
 }

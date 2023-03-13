@@ -34,7 +34,7 @@ public class GameScreen implements InputProcessor, Screen {
     private final SquareMenu squareMenu;
     TiledMap tiledMap;
 
-    OrthographicCamera camera;
+    public OrthographicCamera camera;
 
     TiledMapRenderer tiledMapRenderer;
 
@@ -144,11 +144,11 @@ public class GameScreen implements InputProcessor, Screen {
         camera.update();
         tiledMapRenderer.setView(camera);
 
-
         sb.begin();
 
         tiledMapRenderer.render();
         squareMenu.draw(sb);
+        // control.translate(new Vector2(camera.position.x, camera.position.y));
 
         sb.end();
 
@@ -174,8 +174,7 @@ public class GameScreen implements InputProcessor, Screen {
     }
 
     private void updateCharacterPositionAndTexture() {
-        Set<DirectionEnum> directionAsked = Arrays.stream(DirectionEnum.values())
-                .filter(direction -> Gdx.input.isKeyPressed(direction.getKey()))
+        Set<DirectionEnum> directionAsked = Arrays.stream(DirectionEnum.values()).filter(direction -> Gdx.input.isKeyPressed(direction.getKey()))
                 .collect(Collectors.toSet());
 
         Vector2 translation = player.moveIfPossible(directionAsked);
@@ -184,7 +183,7 @@ public class GameScreen implements InputProcessor, Screen {
             // We need to update camera position
             camera.translate(translation.x, translation.y);
             debugTile.translate(translation.x, translation.y);
-
+            squareMenu.translate(translation.x, translation.y);
         }
     }
 

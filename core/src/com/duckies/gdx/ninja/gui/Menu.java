@@ -9,7 +9,7 @@ import java.util.ArrayList;
 
 public class Menu {
     public String name;
-    public Vector2 pos;
+    public Vector2 position;
     public Texture texture;
     public float width;
     public float height;
@@ -21,18 +21,18 @@ public class Menu {
     public ArrayList<Button> buttons;
 
     public Menu(float x, float y, float scale, Texture texture) {
-        pos = new Vector2(x, y);
+        position = new Vector2(x, y);
         this.texture = texture;
         width = texture.getWidth() * scale;
         height = texture.getHeight() * scale;
-        buttons = new ArrayList<Button>();
+        buttons = new ArrayList<>();
         hitbox = new Rectangle(x, y, width, height);
         setActive();
     }
 
     // Render the texture and all of the button textures
     public void draw(SpriteBatch batch) {
-        if (texture != null) batch.draw(texture, pos.x, pos.y, width, height);
+        if (texture != null) batch.draw(texture, position.x, position.y, width, height);
         for (Button b : buttons) {
             b.draw(batch);
         }
@@ -87,8 +87,8 @@ public class Menu {
     public void addButtons(float offset, int columns, int rows, Texture texture, Texture select, int scale) {
         for (int i = 0; i < columns; i++) {
             for (int j = 0; j < rows; j++) {
-                float bx = pos.x + (offset + ((i + 1) * offset) + (i * texture.getWidth())) * 2;
-                float by = pos.y + (offset + ((j + 1) * offset) + (j * texture.getHeight())) * 2;
+                float bx = position.x + (offset + ((i + 1) * offset) + (i * texture.getWidth())) * 2;
+                float by = position.y + (offset + ((j + 1) * offset) + (j * texture.getHeight())) * 2;
                 float width = texture.getWidth() * 2;
                 float height = texture.getHeight() * 2;
 
@@ -126,5 +126,18 @@ public class Menu {
         } else {
             setActive();
         }
+    }
+
+    public void translate(float x, float y) {
+        this.position.x += x;
+        this.position.y += y;
+        buttons.forEach(b -> {
+            b.pos.x += x;
+            b.pos.y += y;
+            if (b.selector != null) {
+                b.selector.pos.x += x;
+                b.selector.pos.y += y;
+            }
+        });
     }
 }

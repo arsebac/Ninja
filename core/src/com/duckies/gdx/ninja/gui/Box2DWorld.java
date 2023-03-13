@@ -55,9 +55,9 @@ public class Box2DWorld {
     }
 
     public void tick(OrthographicCamera camera, Control control) {
-        if (control.debug)
+        if (control.debug) {
             debugRenderer.render(world, camera.combined);
-
+        }
         world.step(Gdx.app.getGraphics().getDeltaTime(), 6, 2);
         world.clearForces();
     }

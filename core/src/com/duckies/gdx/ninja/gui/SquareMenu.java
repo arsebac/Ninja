@@ -5,7 +5,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.duckies.gdx.ninja.GameScreen;
 
 public class SquareMenu extends Menu {
-    public BuildMenu build;
+    public BuildMenu buildMenu;
 
     public final GameScreen game;
 
@@ -48,29 +48,29 @@ public class SquareMenu extends Menu {
         buttons.get(3).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(Button b) {
-                build.toggleActive();
+                buildMenu.toggleActive();
             }
         });
 
         // BUILDING
-        build = new BuildMenu(position.x + width, 0, 2, Media.mainBack);
+        buildMenu = new BuildMenu(position.x + width, 0, 2, Media.mainBack);
     }
 
     @Override
-    public void draw(SpriteBatch batch) {
-        super.draw(batch);
-        build.draw(batch);
+    public void draw(SpriteBatch batch, float parentAlpha) {
+        super.draw(batch, parentAlpha);
+        buildMenu.draw(batch, parentAlpha);
     }
 
     @Override
     public void checkHover(Vector2 pos) {
         super.checkHover(pos);
-        build.checkHover(pos);
+        buildMenu.checkHover(pos);
     }
 
     public void translate(float x, float y) {
         super.translate(x, y);
-        build.translate(x, y);
+        buildMenu.translate(x, y);
     }
 
 }

@@ -1,13 +1,15 @@
 package com.duckies.gdx.ninja.gui;
 
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 
 import java.util.ArrayList;
 
-public class Menu {
+public class Menu extends Actor {
     public String name;
     public Vector2 position;
     public Texture texture;
@@ -30,12 +32,17 @@ public class Menu {
         setActive();
     }
 
-    // Render the texture and all of the button textures
-    public void draw(SpriteBatch batch) {
+    @Override
+    public void draw(Batch batch, float parentAlpha) {
         if (texture != null) batch.draw(texture, position.x, position.y, width, height);
         for (Button b : buttons) {
             b.draw(batch);
         }
+    }
+
+    // Render the texture and all of the button textures
+    public void draw(SpriteBatch batch, float parentAlpha) {
+
     }
 
     // If the player has clicked the mouse then processedClick will be true
@@ -99,7 +106,17 @@ public class Menu {
                 selector.pos.x = bx - ((selector.width - width) / 2);
                 selector.pos.y = by - ((selector.height - height) / 2);
 
-                buttons.add(new Button(bx, by, width, height, texture, selector, null));
+                Button button = new Button(bx, by, width, height, texture, selector, null);
+
+                button.setOnClickListener(
+                        new OnClickListener() {
+                            @Override
+                            public void onClick(Button b) {
+                                b.texture = Media.axe;
+                            }
+                        });
+
+                buttons.add(button);
             }
         }
     }

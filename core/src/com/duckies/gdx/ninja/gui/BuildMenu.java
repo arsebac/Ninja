@@ -6,7 +6,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 public class BuildMenu extends Menu {
 
     public BuildMenu(float x, float y, int scale, Texture mainBack) {
-        super(x, y, 2, Media.mainBack);
+        super(x, y, 2, mainBack);
         addButtons(3, 14, 2, Media.pinkButton, Media.selector, 2);
         setInactive();
 
@@ -24,9 +24,9 @@ public class BuildMenu extends Menu {
         buttons.add(close);
     }
 
-    public void draw(SpriteBatch batch) {
+    public void draw(SpriteBatch batch, float parentAlpha) {
         if (isActive()) {
-            super.draw(batch);
+            super.draw(batch, parentAlpha);
         }
     }
 

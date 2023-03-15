@@ -54,6 +54,7 @@ public class TilemapActor extends Actor {
         super.act(deltaTime);
     }
 
+
     public void draw(Batch batch, float parentAlpha) {
         // adjust tilemap camera to stay in sync with main camera
         Camera mainCamera = getStage().getCamera();

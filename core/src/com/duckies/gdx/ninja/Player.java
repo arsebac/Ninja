@@ -29,9 +29,9 @@ public class Player {
     private final PlayerInstance playerInstance;
     private TextureMapObject textureMapObject;
 
-    public Player(SpritesEnum sprite, TiledMapWrapper tiledMap) {
+    public Player(SpritesEnum sprite, TiledMapWrapper tiledMap, PlayerInstance playerInstance) {
 
-        this.playerInstance = new PlayerInstance();
+        this.playerInstance = playerInstance;
 
         this.pathsLayer = tiledMap.getPathsLayer();
 
@@ -169,6 +169,10 @@ public class Player {
 
     public float getY() {
         return playerInstance.getPositionY();
+    }
+
+    public Vector2 getPosition() {
+        return new Vector2(playerInstance.getPositionX(), playerInstance.getPositionY());
     }
 
     public int getTileCellX() {

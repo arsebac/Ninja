@@ -26,7 +26,8 @@ public class PlayerInstance {
         id = new Random().nextInt();
         name = "player1";
         currentMapName = "farm.tmx";
-        setPosition(new Vector2(67, 47));
+        // setPosition(new Vector2(67, 47));
+        setPosition(new Vector2(40, 40));
         lastSave = System.currentTimeMillis();
     }
 

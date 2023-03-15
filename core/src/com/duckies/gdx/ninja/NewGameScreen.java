@@ -43,7 +43,6 @@ public class NewGameScreen implements Screen {
 
 		GameObjectPersistence.save(new Random().nextInt(), playerInstance);
 
-
 		game.setScreen(new GameScreen(game, playerInstance));
 		dispose();
 	}

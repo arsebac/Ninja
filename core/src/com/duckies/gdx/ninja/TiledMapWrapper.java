@@ -22,7 +22,6 @@ public class TiledMapWrapper {
 
 	public TiledMapWrapper(String mapName) {
 		tiledMap = new TmxMapLoader().load("farm/" + mapName);
-
 		tiledMapRenderer = new OrthogonalTiledMapRendererWithSprites(tiledMap);
 
 		this.warps = buildExits(mapName);
@@ -81,23 +80,20 @@ public class TiledMapWrapper {
 		return tiledMap.getLayers().get(5).getObjects();
 	}
 
-	public int getTileHeight() {
-		for (int i = 0; i < tiledMap.getLayers().getCount(); i++) {
-			if (!(tiledMap.getLayers().get(i) instanceof TiledMapTileLayer layer)) {
-				continue;
-			}
-			return layer.getTileHeight();
-		}
-		return 0;
+	public int getMaxTileX() {
+		return getPathsLayer().getWidth();
 	}
+
+	public int getMaxTileY() {
+		return getPathsLayer().getHeight();
+	}
+
+	public int getTileHeight() {
+		return getPathsLayer().getTileHeight();
+	}
+
 	public int getTileWidth() {
-		for (int i = 0; i < tiledMap.getLayers().getCount(); i++) {
-			if (!(tiledMap.getLayers().get(i) instanceof TiledMapTileLayer layer)) {
-				continue;
-			}
-			return layer.getTileWidth();
-		}
-		return 0;
+		return getPathsLayer().getTileWidth();
 	}
 
 	public Map<String, TiledMapTileLayer.Cell> getCellsMatchingCoordinates(int x, int y) {

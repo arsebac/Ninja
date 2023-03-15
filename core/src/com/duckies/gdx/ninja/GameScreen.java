@@ -7,11 +7,11 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.duckies.gdx.ninja.gui.Box2DWorld;
 import com.duckies.gdx.ninja.gui.Control;
+import com.duckies.gdx.ninja.gui.InventoryActor;
 import com.duckies.gdx.ninja.gui.SquareMenu;
 import com.duckies.gdx.ninja.pojo.PlayerInstance;
 import com.duckies.gdx.ninja.pojo.Warp;
@@ -55,6 +55,8 @@ public class GameScreen implements InputProcessor, Screen {
     private long lastUpdate = 0L;
 
     public Control control;
+
+    private InventoryActor inventoryActor;
 
     public GameScreen(NinjaGame game) {
         this(game, new PlayerInstance());
@@ -100,7 +102,7 @@ public class GameScreen implements InputProcessor, Screen {
         camera.translate(x - camera.position.x, y - camera.position.y);
 
         box2D = new Box2DWorld();
-        squareMenu = new SquareMenu(this);
+        squareMenu = new SquareMenu(this, playerInstance.getInventory());
 
         stage.addActor(squareMenu);
     }
@@ -139,7 +141,7 @@ public class GameScreen implements InputProcessor, Screen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         control.processedClick = squareMenu.checkClick(control.mouseClickPos, control.processedClick);
-        control.processedClick = squareMenu.buildMenu.checkClick(control.mouseClickPos, control.processedClick);
+        control.processedClick = squareMenu.inventoryActor.checkClick(control.mouseClickPos, control.processedClick);
         squareMenu.checkHover(control.mousePos);
 
         updateCharacterPositionAndTexture();
@@ -220,7 +222,6 @@ public class GameScreen implements InputProcessor, Screen {
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-
         // Compute difference between middle of the screen and touch point
 
         float w = Gdx.graphics.getWidth();

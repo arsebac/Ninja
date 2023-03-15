@@ -44,4 +44,8 @@ public class Button extends Entity {
     public void updateHitbox() {
         hitbox.set(pos.x, pos.y, width, height);
     }
+
+    public boolean isEmpty() {
+        return this.content == null;
+    }
 }

@@ -16,7 +16,7 @@ public class PlayerInstance {
 
     private float positionY;
 
-    private Inventory inventory;
+    private Inventory inventory = new Inventory();
 
     private float lastSave;
     private int id;

@@ -1,10 +1,11 @@
 package com.duckies.gdx.ninja.pojo;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Inventory {
 
-    private List<ItemInstance> items;
+    private List<ItemInstance> items = new ArrayList<>();
 
     private int capacity;
 

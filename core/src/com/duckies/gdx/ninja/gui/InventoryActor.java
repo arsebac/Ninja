@@ -2,11 +2,19 @@ package com.duckies.gdx.ninja.gui;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.duckies.gdx.ninja.pojo.Inventory;
+import com.duckies.gdx.ninja.pojo.ItemInstance;
 
-public class BuildMenu extends Menu {
+import java.util.Optional;
 
-    public BuildMenu(float x, float y, int scale, Texture mainBack) {
+public class InventoryActor extends Menu {
+
+    private Inventory inventory;
+
+    public InventoryActor(float x, float y, int scale, Texture mainBack, Inventory inventory) {
         super(x, y, 2, mainBack);
+        this.inventory = inventory;
+
         addButtons(3, 14, 2, Media.pinkButton, Media.selector, 2);
         setInactive();
 
@@ -25,6 +33,13 @@ public class BuildMenu extends Menu {
     }
 
     public void draw(Batch batch, float parentAlpha) {
+        for (int i = 0; i < buttons.size(); i++) {
+            ItemInstance itemInstance = null;
+            if (i < inventory.getItems().size()) {
+                itemInstance = inventory.getItems().get(i);
+            }
+            buttons.get(i).content = itemInstance != null ? Media.axe : null;
+        }
         if (isActive()) {
             super.draw(batch, parentAlpha);
         }

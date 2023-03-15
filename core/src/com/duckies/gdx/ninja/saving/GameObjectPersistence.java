@@ -25,6 +25,7 @@ public class GameObjectPersistence {
         kryo.register(Inventory.class);
         kryo.register(ItemInstance.class);
         kryo.register(Vector2.class);
+        kryo.register(ArrayList.class);
 
     }
 

@@ -1,7 +1,7 @@
 package com.duckies.gdx.ninja.gui;
 
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.Rectangle;
 
 public class Button extends Entity {
@@ -28,7 +28,7 @@ public class Button extends Entity {
     }
 
     @Override
-    public void draw(SpriteBatch batch) {
+    public void draw(Batch batch) {
         if (texture != null) batch.draw(texture, pos.x, pos.y, width, height);
         if (content != null) batch.draw(content, pos.x, pos.y, width, height);
         if (icon != null) batch.draw(icon, pos.x, pos.y, width, height);
@@ -43,5 +43,9 @@ public class Button extends Entity {
 
     public void updateHitbox() {
         hitbox.set(pos.x, pos.y, width, height);
+    }
+
+    public boolean isEmpty() {
+        return this.content == null;
     }
 }

@@ -33,6 +33,10 @@ public class Media {
     public static Texture selector;
     public static Texture close_menu;
 
+    public static Texture axe;
+
+    private static TextureRegion[] axeFrames;
+
     static {
 
 
@@ -47,6 +51,8 @@ public class Media {
         iconSettings = new Texture(Gdx.files.internal("gui/icons/settings.png"));
         iconResources = new Texture(Gdx.files.internal("gui/icons/resources.png"));
         close_menu = new Texture(Gdx.files.internal("gui/icons/close_menu.png"));
+
+        axe = new Texture(Gdx.files.internal("data/items/axe.png"));
     }
 
     public void dispose() {

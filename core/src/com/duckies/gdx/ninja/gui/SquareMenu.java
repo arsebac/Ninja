@@ -1,15 +1,17 @@
 package com.duckies.gdx.ninja.gui;
 
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.Vector2;
 import com.duckies.gdx.ninja.GameScreen;
+import com.duckies.gdx.ninja.pojo.Inventory;
 
 public class SquareMenu extends Menu {
-    public BuildMenu build;
+
+    public InventoryActor inventoryActor;
 
     public final GameScreen game;
 
-    public SquareMenu(final GameScreen game) {
+    public SquareMenu(final GameScreen game, Inventory inventory) {
         super(0, 0, 2, Media.squareMenu);
 
         this.game = game;
@@ -48,29 +50,29 @@ public class SquareMenu extends Menu {
         buttons.get(3).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(Button b) {
-                build.toggleActive();
+                inventoryActor.toggleActive();
             }
         });
 
         // BUILDING
-        build = new BuildMenu(position.x + width, 0, 2, Media.mainBack);
+        inventoryActor = new InventoryActor(position.x + width, 0, 2, Media.mainBack, inventory);
     }
 
     @Override
-    public void draw(SpriteBatch batch) {
-        super.draw(batch);
-        build.draw(batch);
+    public void draw(Batch batch, float parentAlpha) {
+        super.draw(batch, parentAlpha);
+        inventoryActor.draw(batch, parentAlpha);
     }
 
     @Override
     public void checkHover(Vector2 pos) {
         super.checkHover(pos);
-        build.checkHover(pos);
+        inventoryActor.checkHover(pos);
     }
 
     public void translate(float x, float y) {
         super.translate(x, y);
-        build.translate(x, y);
+        inventoryActor.translate(x, y);
     }
 
 }

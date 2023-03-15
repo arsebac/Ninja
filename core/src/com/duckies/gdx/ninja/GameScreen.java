@@ -17,6 +17,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.duckies.gdx.ninja.gui.Box2DWorld;
 import com.duckies.gdx.ninja.gui.Control;
+import com.duckies.gdx.ninja.gui.InventoryActor;
 import com.duckies.gdx.ninja.gui.SquareMenu;
 import com.duckies.gdx.ninja.pojo.PlayerInstance;
 import com.duckies.gdx.ninja.pojo.Warp;
@@ -55,7 +56,7 @@ public class GameScreen implements InputProcessor, Screen {
 
 	public Control control;
 
-	public GameScreen(NinjaGame game) {
+	private InventoryActor inventoryActor;public GameScreen(NinjaGame game) {
 		this(game, new PlayerInstance());
 	}
 
@@ -98,8 +99,10 @@ public class GameScreen implements InputProcessor, Screen {
 		camera.translate(x - camera.position.x, y - camera.position.y);
 
 		box2D = new Box2DWorld();
-		control.reset = true;
-		squareMenu = new SquareMenu(this);
+
+		squareMenu = new SquareMenu(this, playerInstance.getInventory());
+
+        stage.addActor(squareMenu);
 	}
 
 	private void addActors() {
@@ -136,7 +139,7 @@ public class GameScreen implements InputProcessor, Screen {
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
 		control.processedClick = squareMenu.checkClick(control.mouseClickPos, control.processedClick);
-		control.processedClick = squareMenu.build.checkClick(control.mouseClickPos, control.processedClick);
+		control.processedClick = squareMenu.inventoryActor.checkClick(control.mouseClickPos, control.processedClick);
 		squareMenu.checkHover(control.mousePos);
 
 		updateCharacterPositionAndTexture();
@@ -149,8 +152,7 @@ public class GameScreen implements InputProcessor, Screen {
 		sb.begin();
 
 		tileMapWrapper.getTiledMapRenderer().render();
-		squareMenu.draw(sb);
-		// control.translate(new Vector2(camera.position.x, camera.position.y));
+
 
 		sb.end();
 
@@ -191,7 +193,7 @@ public class GameScreen implements InputProcessor, Screen {
 
 			camera.translate(translation.x, translation.y);
 
-			squareMenu.translate(translation.x, translation.y);
+
 
 			Warp warp = tileMapWrapper.getWarp(player.getTileCellX(), player.getTileCellY());
 
@@ -239,7 +241,6 @@ public class GameScreen implements InputProcessor, Screen {
 
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-
 
 		Vector2 click = PositionHelpers.getClickPosition(screenX, screenY);
 		Vector2 camera = PositionHelpers.getCameraPosition(this.camera);

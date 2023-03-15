@@ -1,7 +1,7 @@
 package com.duckies.gdx.ninja.gui;
 
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Body;
 
@@ -32,7 +32,7 @@ public class Entity implements Comparable<Entity> {
         pos = new Vector3();
     }
 
-    public void draw(SpriteBatch batch) {
+    public void draw(Batch batch) {
         if (shadow != null) batch.draw(shadow, pos.x, pos.y, width, height);
         if (texture != null) batch.draw(texture, pos.x, pos.y, width, height);
     }

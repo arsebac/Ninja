@@ -1,7 +1,7 @@
 package com.duckies.gdx.ninja.gui;
 
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.Batch;
 
 public class BuildMenu extends Menu {
 
@@ -24,7 +24,7 @@ public class BuildMenu extends Menu {
         buttons.add(close);
     }
 
-    public void draw(SpriteBatch batch, float parentAlpha) {
+    public void draw(Batch batch, float parentAlpha) {
         if (isActive()) {
             super.draw(batch, parentAlpha);
         }

@@ -112,7 +112,11 @@ public class Menu extends Actor {
                         new OnClickListener() {
                             @Override
                             public void onClick(Button b) {
-                                b.texture = Media.axe;
+                                if (b.content != null) {
+                                    b.content = null;
+                                } else {
+                                    b.content = Media.axe;
+                                }
                             }
                         });
 

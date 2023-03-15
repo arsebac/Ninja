@@ -1,6 +1,6 @@
 package com.duckies.gdx.ninja.gui;
 
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.Vector2;
 import com.duckies.gdx.ninja.GameScreen;
 
@@ -57,7 +57,7 @@ public class SquareMenu extends Menu {
     }
 
     @Override
-    public void draw(SpriteBatch batch, float parentAlpha) {
+    public void draw(Batch batch, float parentAlpha) {
         super.draw(batch, parentAlpha);
         buildMenu.draw(batch, parentAlpha);
     }

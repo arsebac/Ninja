@@ -101,7 +101,6 @@ public class GameScreen implements InputProcessor, Screen {
 
         box2D = new Box2DWorld();
         squareMenu = new SquareMenu(this);
-        squareMenu.translate(30, 30);
 
         stage.addActor(squareMenu);
     }

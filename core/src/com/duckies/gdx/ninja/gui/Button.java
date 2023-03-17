@@ -32,14 +32,15 @@ public class Button extends Entity {
         if (texture != null) batch.draw(texture, pos.x, pos.y, width, height);
         if (content != null) batch.draw(content, pos.x, pos.y, width, height);
         if (icon != null) batch.draw(icon, pos.x, pos.y, width, height);
-        if (isHovered() && selector != null) {
+        if (isSelected() && selector != null) {
             selector.draw(batch);
         }
     }
 
-    private boolean isHovered() {
-        return state == Enums.EnityState.HOVERING;
+    public boolean isSelected() {
+        return state == Enums.EnityState.SELECTED;
     }
+
 
     public void updateHitbox() {
         hitbox.set(pos.x, pos.y, width, height);

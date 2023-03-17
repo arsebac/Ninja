@@ -5,6 +5,7 @@ import java.util.List;
 
 public class Inventory {
 
+    public int selected;
     private List<ItemInstance> items = new ArrayList<>();
 
     private int capacity;
@@ -23,5 +24,10 @@ public class Inventory {
 
     public void setCapacity(int capacity) {
         this.capacity = capacity;
+    }
+
+    public String getSelectedItemName() {
+        ItemInstance selectedItem = items.get(selected);
+        return selectedItem == null ? null : selectedItem.getType();
     }
 }

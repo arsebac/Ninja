@@ -1,6 +1,7 @@
 package com.duckies.gdx.ninja;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -13,11 +14,13 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.duckies.gdx.ninja.gui.Box2DWorld;
 import com.duckies.gdx.ninja.gui.Control;
 import com.duckies.gdx.ninja.gui.InventoryActor;
+import com.duckies.gdx.ninja.gui.Media;
 import com.duckies.gdx.ninja.gui.SquareMenu;
 import com.duckies.gdx.ninja.pojo.PlayerInstance;
 import com.duckies.gdx.ninja.pojo.Warp;
@@ -84,11 +87,12 @@ public class GameScreen implements InputProcessor, Screen {
 		int displayH = Gdx.graphics.getHeight();
 		control = new Control(displayW, displayH, ((OrthographicCamera) stage.getCamera()));
 		Gdx.input.setInputProcessor(control);
-		Gdx.input.setInputProcessor(this);
+		control.addInputProcessor(this);
+		control.addInputProcessor(stage);
 		control.reset = true;
 
 		player = new Player(SpritesEnum.SAM, tileMapWrapper, p);
-		pnj = new Player(SpritesEnum.SHANE, tileMapWrapper, p);
+		pnj = new Player(SpritesEnum.SHANE, tileMapWrapper, null);
 		addActors();
 
 		tileMapWrapper.getObjectLayerObjects().add(pnj.createTextureMapObject(w / 2, h / 2));
@@ -119,6 +123,7 @@ public class GameScreen implements InputProcessor, Screen {
 	}
 
 	private void addLoadingBarActor() {
+
 		loadingBarWithBorders = new LoadingBarWithBorders(100, 20);
 		loadingBarWithBorders.setPosition(30, 5);
 		stage.addActor(loadingBarWithBorders);
@@ -213,15 +218,6 @@ public class GameScreen implements InputProcessor, Screen {
 		}
 	}
 
-	/**
-	 * Check if camera translation may move camera out of map.
-	 *
-	 * @param translation translation vector
-	 */
-	private void updateCameraTranslationForBorders(Vector2 translation) {
-
-
-	}
 
 	@Override
 	public boolean keyDown(int keycode) {
@@ -248,8 +244,26 @@ public class GameScreen implements InputProcessor, Screen {
 		Vector2 map = new Vector2(tileMapWrapper.getTileWidth(), tileMapWrapper.getTileHeight());
 
 		Vector2 clickedCase = PositionHelpers.getClickedCase(click, camera, player, map);
-		// Remove tiles
-		tileMapWrapper.removeCellTile((int) clickedCase.x, (int) clickedCase.y);
+
+		// Check interaction with cells
+		int x = (int) clickedCase.x;
+		int y = (int) clickedCase.y;
+		Collection<TiledMapTileLayer.Cell> cells = tileMapWrapper.getCellsMatchingCoordinates(x, y).values();
+
+		for (TiledMapTileLayer.Cell cell : cells) {
+			if (cell != null && cell.getTile() != null && cell.getTile().getId() != 0) {
+				int cellId = cell.getTile().getId();
+
+				String selectedItemName = playerInstance.getInventory().getSelectedItemName();
+
+				if (!Media.ALLOWED_INTERACTION_BY_TOOL.getOrDefault(selectedItemName, Collections.emptySet()).contains(cellId)) {
+					System.out.println("Cell id " + cellId + " cannot inteact with tool " + selectedItemName);
+				} else {
+					System.out.println(selectedItemName + " remove " + cellId);
+					cell.setTile(null);
+				}
+			}
+		}
 		return true;
 	}
 

@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.objects.TextureMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.Vector2;
+import com.duckies.gdx.ninja.gui.Media;
 import com.duckies.gdx.ninja.pojo.PlayerInstance;
 
 import java.util.EnumMap;
@@ -22,7 +23,6 @@ public class Player {
     private final TextureRegion textureRegion;
     private final TiledMapTileLayer pathsLayer;
     private final TiledMapTileLayer backLayer;
-
     private DirectionEnum currentDirection;
     private Long startOfCurrentDirection;
     private final EnumMap<DirectionEnum, Animation<TextureRegion>> animationByDirection;
@@ -31,7 +31,7 @@ public class Player {
 
     public Player(SpritesEnum sprite, TiledMapWrapper tiledMap, PlayerInstance playerInstance) {
 
-        this.playerInstance = playerInstance;
+        this.playerInstance = playerInstance == null ? new PlayerInstance() : playerInstance;
 
         this.pathsLayer = tiledMap.getPathsLayer();
 

@@ -21,7 +21,8 @@ public class Enums {
         WALKING,
         FLYING,
         HOVERING, 
-        LANDING
+        LANDING,
+        SELECTED
     }
     
     public enum MenuState {

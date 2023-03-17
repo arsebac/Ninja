@@ -1,5 +1,8 @@
 package com.duckies.gdx.ninja.gui;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputProcessor;
@@ -38,11 +41,18 @@ public class Control extends InputAdapter implements InputProcessor {
     int screenWidth;
     int screenHeight;
 
+    private List<InputProcessor> processors = new ArrayList<>();
+
     public Control(int screenWidth, int screenHeight, OrthographicCamera camera) {
         this.camera = camera;
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
     }
+
+    public void addInputProcessor(InputProcessor processor) {
+        this.processors.add(processor);
+    }
+
 
     private void setMouseClickedPos(int screenX, int screenY) {
         // Set mouse position (flip screen Y)
@@ -97,6 +107,10 @@ public class Control extends InputAdapter implements InputProcessor {
         }
 
         setMouseClickedPos(screenX, screenY);
+
+        for (InputProcessor processor : this.processors) {
+            processor.touchDown(screenX, screenY, pointer, button);
+        }
         return false;
     }
 

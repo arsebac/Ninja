@@ -5,17 +5,15 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.duckies.gdx.ninja.pojo.Inventory;
 import com.duckies.gdx.ninja.pojo.ItemInstance;
 
-import java.util.Optional;
-
 public class InventoryActor extends Menu {
 
     private Inventory inventory;
 
     public InventoryActor(float x, float y, int scale, Texture mainBack, Inventory inventory) {
-        super(x, y, 2, mainBack);
+        super(x, y, 2, mainBack, inventory);
         this.inventory = inventory;
 
-        addButtons(3, 14, 2, Media.pinkButton, Media.selector, 2);
+        addButtons(3, 14, 2, Media.pinkButton, Media.selector, 2, inventory);
         setInactive();
 
         Button close = new Button(0, 0, Media.close_menu.getWidth() * scale, Media.close_menu.getHeight() * scale, Media.close_menu, null, null);
@@ -33,12 +31,20 @@ public class InventoryActor extends Menu {
     }
 
     public void draw(Batch batch, float parentAlpha) {
+
         for (int i = 0; i < buttons.size(); i++) {
             ItemInstance itemInstance = null;
-            if (i < inventory.getItems().size()) {
+            if (inventory.getItems() != null && i < inventory.getItems().size()) {
                 itemInstance = inventory.getItems().get(i);
             }
-            buttons.get(i).content = itemInstance != null ? Media.axe : null;
+            Button button = buttons.get(i);
+            if (itemInstance != null) {
+                button.content = Media.getItemById(itemInstance.getType());
+            } else {
+                button.content = null;
+            }
+
+            button.state = inventory.selected == i ? Enums.EnityState.SELECTED : Enums.EnityState.NONE;
         }
         if (isActive()) {
             super.draw(batch, parentAlpha);

@@ -6,6 +6,13 @@ public class ItemInstance {
 
     private int quantity;
 
+    public ItemInstance() {
+    }
+
+    public ItemInstance(String type) {
+        this.type = type;
+    }
+
     public String getType() {
         return type;
     }

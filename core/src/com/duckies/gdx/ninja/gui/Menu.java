@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.duckies.gdx.ninja.pojo.Inventory;
 
 import java.util.ArrayList;
 
@@ -22,7 +23,7 @@ public class Menu extends Actor {
     public Rectangle hitbox;
     public ArrayList<Button> buttons;
 
-    public Menu(float x, float y, float scale, Texture texture) {
+    public Menu(float x, float y, float scale, Texture texture, Inventory inventory) {
         position = new Vector2(x, y);
         this.texture = texture;
         width = texture.getWidth() * scale;
@@ -91,9 +92,13 @@ public class Menu extends Actor {
 
     // A function to add multiply buttons to our menu
     // It is possible to add any size grid of buttons with a certain sized padding
-    public void addButtons(float offset, int columns, int rows, Texture texture, Texture select, int scale) {
+    public void addButtons(float offset, int columns, int rows, Texture texture, Texture select, int scale,
+                           Inventory inventory) {
         for (int i = 0; i < columns; i++) {
             for (int j = 0; j < rows; j++) {
+
+                int buttonId = i * rows + j;
+
                 float bx = position.x + (offset + ((i + 1) * offset) + (i * texture.getWidth())) * 2;
                 float by = position.y + (offset + ((j + 1) * offset) + (j * texture.getHeight())) * 2;
                 float width = texture.getWidth() * 2;
@@ -109,15 +114,8 @@ public class Menu extends Actor {
                 Button button = new Button(bx, by, width, height, texture, selector, null);
 
                 button.setOnClickListener(
-                        new OnClickListener() {
-                            @Override
-                            public void onClick(Button b) {
-                                if (b.content != null) {
-                                    b.content = null;
-                                } else {
-                                    b.content = Media.axe;
-                                }
-                            }
+                        b -> {
+                            inventory.selected = buttonId;
                         });
 
                 buttons.add(button);

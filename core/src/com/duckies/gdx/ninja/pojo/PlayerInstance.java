@@ -20,7 +20,6 @@ public class PlayerInstance {
 
     private float lastSave;
     private int id;
-
     public PlayerInstance() {
         currentHealth = 100;
         id = new Random().nextInt();
@@ -29,6 +28,13 @@ public class PlayerInstance {
         // setPosition(new Vector2(67, 47));
         setPosition(new Vector2(40, 40));
         lastSave = System.currentTimeMillis();
+
+        inventory.getItems().add(new ItemInstance("pickaxe"));
+        inventory.getItems().add(new ItemInstance("wateringcan"));
+        inventory.getItems().add(new ItemInstance("axe"));
+        inventory.getItems().add(new ItemInstance("fishingrod"));
+        inventory.getItems().add(new ItemInstance("hoe"));
+        inventory.getItems().add(new ItemInstance("sword"));
     }
 
     public PlayerInstance(int currentHealth, String name, String currentMapName, Vector2 position) {
@@ -108,6 +114,9 @@ public class PlayerInstance {
     }
 
     public Inventory getInventory() {
+        if (inventory == null) {
+            inventory = new Inventory();
+        }
         return inventory;
     }
 

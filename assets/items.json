@@ -1,0 +1,52 @@
+{
+  "media": [
+    {
+      "name": "fishrod",
+      "tileset": "inventory/tools.png",
+      "width": 16,
+      "height": 16,
+      "x": 128,
+      "y": 0
+    },
+    {
+      "name": "hoe",
+      "tileset": "inventory/tools.png",
+      "width": 16,
+      "height": 16,
+      "x": 80,
+      "y": 32
+    },
+    {
+      "name": "hoe",
+      "tileset": "inventory/tools.png",
+      "width": 16,
+      "height": 16,
+      "x": 80,
+      "y": 32
+    },
+    {
+      "name": "pickaxe",
+      "tileset": "inventory/tools.png",
+      "width": 16,
+      "height": 16,
+      "x": 81,
+      "y": 94
+    },
+    {
+      "name": "axe",
+      "tileset": "inventory/tools.png",
+      "width": 16,
+      "height": 16,
+      "x": 80,
+      "y": 160
+    },
+    {
+      "name": "wateringcan",
+      "tileset": "inventory/tools.png",
+      "width": 16,
+      "height": 16,
+      "x": 33,
+      "y": 225
+    }
+  ]
+}

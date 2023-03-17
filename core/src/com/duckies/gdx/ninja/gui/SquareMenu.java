@@ -12,12 +12,12 @@ public class SquareMenu extends Menu {
     public final GameScreen game;
 
     public SquareMenu(final GameScreen game, Inventory inventory) {
-        super(0, 0, 2, Media.squareMenu);
+        super(0, 0, 2, Media.squareMenu, inventory);
 
         this.game = game;
 
         int scale = 2;
-        addButtons(3, 2, 2, Media.pinkButton, Media.selector, scale);
+        addButtons(3, 2, 2, Media.pinkButton, Media.selector, scale, null);
 
         Button btn = buttons.get(0);
         btn.setOnClickListener(new OnClickListener() {
